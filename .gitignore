@@ -1,2 +1,4 @@
-./Intermediate
-./Binaried/UE4*.dll
+Intermediate/
+Binaries/Win64/UE4*.dll
+Binaries/Win64/*.pdb
+Binaries/Win64/*.modules
