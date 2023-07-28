@@ -102,7 +102,7 @@ void UJsonStrSubscriber::SubListener::on_data_available(eprosima::fastdds::dds::
 			// Print your structure data here.
 			// ++samples;
 			// std::cout << "Sample received, count=" << samples << std::endl;
-			getStr = st.LRJsonString();
+			getStr = st.JsonString();
 			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
 		}
 	}

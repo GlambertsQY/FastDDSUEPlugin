@@ -94,7 +94,7 @@ void UJsonStrPublisher::SendMessage(FString Message)
 	if (listener_.matched != 0)
 	{
 		JsonStrBean sendStr;
-		sendStr.LRJsonString({TCHAR_TO_UTF8(*Message)});
+		sendStr.JsonString({TCHAR_TO_UTF8(*Message)});
 		writer_->write(&sendStr);
 	}
 }
