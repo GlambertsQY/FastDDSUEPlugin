@@ -5,6 +5,7 @@
 #pragma warning(disable : 4668)
 #pragma warning(disable : 4582)
 #pragma warning(disable : 4265)
+#pragma warning(disable : 4530)
 
 #include <fastdds/dds/domain/DomainParticipant.hpp>
 #include <fastdds/dds/subscriber/DataReader.hpp>

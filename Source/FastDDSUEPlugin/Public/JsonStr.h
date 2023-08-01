@@ -25,6 +25,7 @@
 #pragma warning(disable : 4668)
 #pragma warning(disable : 4582)
 #pragma warning(disable : 4265)
+#pragma warning(disable : 4530)
 
 #include <fastrtps/utils/fixed_size_string.hpp>
 
