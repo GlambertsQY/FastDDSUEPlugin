@@ -19,17 +19,50 @@ public class FastDDSUEPlugin : ModuleRules
 			}
 			);
 		PublicIncludePaths.Add( Path.Combine(ModuleDirectory, "include"));
-		PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "libfastcdr-1.1.lib"));
-		PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "fastrtps-2.11.lib"));
+
 		
 		PublicDefinitions.Add("WIN32");
 		PublicDefinitions.Add("_WINDOWS");
-		PublicDefinitions.Add("FASTRTPS_DYN_LINK");
+		// PublicDefinitions.Add("FASTRTPS_DYN_LINK");
 		PublicDefinitions.Add("FASTRTPS_NO_LIB");
 		PublicDefinitions.Add("FASTCDR_NO_LIB");
-		
-		// 这句没用？
-		// RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "dlls", "fastrtps-2.11.dll"));
+		PublicDefinitions.Add("FOONATHAN_MEMORY=1");
+		PublicDefinitions.Add("FOONATHAN_MEMORY_VERSION_MAJOR=0");
+		PublicDefinitions.Add("FOONATHAN_MEMORY_VERSION_MINOR=7");
+		PublicDefinitions.Add("FOONATHAN_MEMORY_VERSION_PATCH=3");
+		// PublicDefinitions.Add("FASTCDR_DYN_LINK");
+
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "win64", "libfastcdr-1.1.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "win64", "libfastrtps-2.11.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "win64", "foonathan_memory-0.7.3.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "win64", "tinyxml2.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "win64", "ShLwApi.Lib"));
+			// 在打包的时候
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastrtps-2.11.dll"), Path.Combine(ModuleDirectory, "dlls", "fastrtps-2.11.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastcdr-1.1.dll"), Path.Combine(ModuleDirectory, "dlls", "fastcdr-1.1.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "foonathan_memory-0.7.3.dll"), Path.Combine(ModuleDirectory, "dlls", "foonathan_memory-0.7.3.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "tinyxml2.dll"), Path.Combine(ModuleDirectory, "dlls", "tinyxml2.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastrtps-2.0.dll"), Path.Combine(ModuleDirectory, "dlls", "fastrtps-2.0.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastcdr-1.0.dll"), Path.Combine(ModuleDirectory, "dlls", "fastcdr-1.0.dll"), StagedFileType.NonUFS);
+		}
+		else if (Target.Platform == UnrealTargetPlatform.HoloLens)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "libfastcdr-1.1.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "libfastrtps-2.11.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "foonathan_memory-0.7.3.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "tinyxml2.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "AdvAPI32.Lib"));
+			// PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "ShLwApi.Lib"));
+			// PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "iphlpapi.lib"));
+			// PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "libs", "arm64", "UserEnv.Lib"));
+			// 在打包的时候
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastrtps-2.0.dll"), Path.Combine(ModuleDirectory, "dlls", "arm64", "fastrtps-2.0.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "fastcdr-1.0.dll"), Path.Combine(ModuleDirectory, "dlls", "arm64", "fastcdr-1.0.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "foonathan_memory-0.7.3.dll"), Path.Combine(ModuleDirectory, "dlls", "arm64", "foonathan_memory-0.7.3.dll"), StagedFileType.NonUFS);
+			// RuntimeDependencies.Add(Path.Combine("$(BinaryOutputDir)", "tinyxml2.dll"), Path.Combine(ModuleDirectory, "dlls", "arm64", "tinyxml2.dll"), StagedFileType.NonUFS);
+		}
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
