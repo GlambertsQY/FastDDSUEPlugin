@@ -71,7 +71,7 @@ class Cdr;
  * @brief This class represents the structure JsonStrBean defined by the user in the IDL file.
  * @ingroup FastDDSJsonStr
  */
-class JsonStrBean
+class FASTDDSUEPLUGIN_API JsonStrBean
 {
 public:
 

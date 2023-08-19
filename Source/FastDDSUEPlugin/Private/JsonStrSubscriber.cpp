@@ -2,12 +2,13 @@
 
 
 #include "JsonStrSubscriber.h"
-#include "JsonStrPubSubTypes.h"
 
 #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
 #include <fastdds/dds/subscriber/DataReader.hpp>
 #include <fastdds/dds/subscriber/SampleInfo.hpp>
 #include <fastdds/dds/subscriber/Subscriber.hpp>
+
+#include "SubListener.h"
 
 using namespace eprosima::fastdds::dds;
 
@@ -45,7 +46,7 @@ bool UJsonStrSubscriber::init()
 	//CREATE THE READER
 	rqos = DATAREADER_QOS_DEFAULT;
 	rqos.reliability().kind = RELIABLE_RELIABILITY_QOS;
-	reader_ = subscriber_->create_datareader(topic_, rqos, &listener_);
+	reader_ = subscriber_->create_datareader(topic_, rqos, _listener);
 	if (reader_ == nullptr)
 	{
 		return false;
@@ -61,7 +62,8 @@ UJsonStrSubscriber::UJsonStrSubscriber()
 	  , reader_(nullptr)
 	  , type_(new JsonStrBeanPubSubType())
 {
-	Message = &listener_.getStr;
+	_listener = NewObject<USubListener>();
+	Message = &_listener->getStr;
 	ParticipantName = TEXT("Participant_Pub");
 	TopicName = TEXT("myTopic");
 }
@@ -89,42 +91,41 @@ void UJsonStrSubscriber::setParams(FString PName, FString TName)
 	TopicName = TName;
 }
 
-void UJsonStrSubscriber::SubListener::on_data_available(eprosima::fastdds::dds::DataReader* reader)
-{
-	// Take data
-	JsonStrBean st;
-	SampleInfo info;
+// void UJsonStrSubscriber::SubListener::on_data_available(eprosima::fastdds::dds::DataReader* reader)
+// {
+// 	// Take data
+// 	SampleInfo info;
+//
+// 	if (reader->take_next_sample(&st, &info) == ReturnCode_t::RETCODE_OK)
+// 	{
+// 		if (info.valid_data)
+// 		{
+// 			// Print your structure data here.
+// 			// ++samples;
+// 			// std::cout << "Sample received, count=" << samples << std::endl;
+// 			getStr = st.JsonString();
+// 			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
+// 		}
+// 	}
+// }
 
-	if (reader->take_next_sample(&st, &info) == ReturnCode_t::RETCODE_OK)
-	{
-		if (info.valid_data)
-		{
-			// Print your structure data here.
-			// ++samples;
-			// std::cout << "Sample received, count=" << samples << std::endl;
-			getStr = st.JsonString();
-			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
-		}
-	}
-}
-
-void UJsonStrSubscriber::SubListener::on_subscription_matched(eprosima::fastdds::dds::DataReader* reader,
-                                                            const eprosima::fastdds::dds::SubscriptionMatchedStatus&
-                                                            info)
-{
-	if (info.current_count_change == 1)
-	{
-		matched = info.total_count;
-		std::cout << "Subscriber matched." << std::endl;
-	}
-	else if (info.current_count_change == -1)
-	{
-		matched = info.total_count;
-		std::cout << "Subscriber unmatched." << std::endl;
-	}
-	else
-	{
-		std::cout << info.current_count_change
-			<< " is not a valid value for SubscriptionMatchedStatus current count change" << std::endl;
-	}
-}
+// void UJsonStrSubscriber::SubListener::on_subscription_matched(eprosima::fastdds::dds::DataReader* reader,
+//                                                             const eprosima::fastdds::dds::SubscriptionMatchedStatus&
+//                                                             info)
+// {
+// 	if (info.current_count_change == 1)
+// 	{
+// 		matched = info.total_count;
+// 		std::cout << "Subscriber matched." << std::endl;
+// 	}
+// 	else if (info.current_count_change == -1)
+// 	{
+// 		matched = info.total_count;
+// 		std::cout << "Subscriber unmatched." << std::endl;
+// 	}
+// 	else
+// 	{
+// 		std::cout << info.current_count_change
+// 			<< " is not a valid value for SubscriptionMatchedStatus current count change" << std::endl;
+// 	}
+// }
