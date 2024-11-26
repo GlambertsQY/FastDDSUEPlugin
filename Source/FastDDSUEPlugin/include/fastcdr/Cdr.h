@@ -24,6 +24,9 @@
 #include <map>
 #include <iostream>
 
+// PublicDefinitions.Add("__APPLE__=0"); in Build.cs seems no effect
+#define __APPLE__ 0
+
 #if !__APPLE__ && !__FreeBSD__ && !__VXWORKS__
 #include <malloc.h>
 #else
