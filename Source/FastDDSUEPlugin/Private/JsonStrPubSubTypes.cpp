@@ -27,7 +27,7 @@
 
 
 using SerializedPayload_t = eprosima::fastrtps::rtps::SerializedPayload_t;
-using InstanceHandle_t = eprosima::fastrtps::rtps::InstanceHandle_t;
+// using InstanceHandle_t = eprosima::fastrtps::rtps::InstanceHandle_t;
 
 JsonStrBeanPubSubType::JsonStrBeanPubSubType()
 {
@@ -132,7 +132,7 @@ void JsonStrBeanPubSubType::deleteData(
 
 bool JsonStrBeanPubSubType::getKey(
         void* data,
-        InstanceHandle_t* handle,
+        eprosima::fastrtps::rtps::InstanceHandle_t* handle,
         bool force_md5)
 {
     if (!m_isGetKeyDefined)
