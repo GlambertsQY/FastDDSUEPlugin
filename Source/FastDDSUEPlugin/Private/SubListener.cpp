@@ -4,25 +4,25 @@
 #include <fastdds/dds/subscriber/DataReader.hpp>
 
 using namespace eprosima::fastdds::dds;
-void USubListener::on_data_available(eprosima::fastdds::dds::DataReader* reader)
-{
-	// Take data
-	eprosima::fastdds::dds::SampleInfo info;
+// void SubListener::on_data_available(eprosima::fastdds::dds::DataReader* reader)
+// {
+	// // Take data
+	// eprosima::fastdds::dds::SampleInfo info;
+	//
+	// if (reader->take_next_sample(&st, &info) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK)
+	// {
+	// 	if (info.valid_data)
+	// 	{
+	// 		// Print your structure data here.
+	// 		// ++samples;
+	// 		// std::cout << "Sample received, count=" << samples << std::endl;
+	// 		getStr = st.JsonString();
+	// 		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
+	// 	}
+	// }
+// }
 
-	if (reader->take_next_sample(&st, &info) == eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK)
-	{
-		if (info.valid_data)
-		{
-			// Print your structure data here.
-			// ++samples;
-			// std::cout << "Sample received, count=" << samples << std::endl;
-			getStr = st.JsonString();
-			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
-		}
-	}
-}
-
-void USubListener::on_subscription_matched(eprosima::fastdds::dds::DataReader* reader,
+void SubListener::on_subscription_matched(eprosima::fastdds::dds::DataReader* reader,
 	const eprosima::fastdds::dds::SubscriptionMatchedStatus& info)
 {
 	if (info.current_count_change == 1)
