@@ -12,7 +12,7 @@
 
 using namespace eprosima::fastdds::dds;
 
-UJsonStrPublisher::UJsonStrPublisher()
+JsonStrPublisher::JsonStrPublisher()
 	: participant_(nullptr)
 	  , publisher_(nullptr)
 	  , topic_(nullptr)
@@ -23,7 +23,7 @@ UJsonStrPublisher::UJsonStrPublisher()
 	TopicName = TEXT("myTopic");
 }
 
-UJsonStrPublisher::~UJsonStrPublisher()
+JsonStrPublisher::~JsonStrPublisher()
 {
 	if (writer_ != nullptr)
 	{
@@ -40,7 +40,7 @@ UJsonStrPublisher::~UJsonStrPublisher()
 	DomainParticipantFactory::get_instance()->delete_participant(participant_);
 }
 
-bool UJsonStrPublisher::init()
+bool JsonStrPublisher::init()
 {
 	/* Initialize data_ here */
 
@@ -83,13 +83,14 @@ bool UJsonStrPublisher::init()
 	return true;
 }
 
-void UJsonStrPublisher::setParams(FString PName, FString TName)
+void JsonStrPublisher::setParams(int32 DId, FString PName, FString TName)
 {
+	DomainId = DId;
 	ParticipantName = PName;
 	TopicName = TName;
 }
 
-void UJsonStrPublisher::SendMessage(FString Message)
+void JsonStrPublisher::SendMessage(FString Message)
 {
 	if (listener_.matched != 0)
 	{
@@ -99,7 +100,7 @@ void UJsonStrPublisher::SendMessage(FString Message)
 	}
 }
 
-void UJsonStrPublisher::PubListener::on_publication_matched(eprosima::fastdds::dds::DataWriter* writer,
+void JsonStrPublisher::PubListener::on_publication_matched(eprosima::fastdds::dds::DataWriter* writer,
                                                             const eprosima::fastdds::dds::PublicationMatchedStatus&
                                                             info)
 {

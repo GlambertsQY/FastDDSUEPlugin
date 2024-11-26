@@ -13,26 +13,23 @@
 #include <fastdds/dds/subscriber/Subscriber.hpp>
 #include "JsonStrPubSubTypes.h"
 
-#include "CoreMinimal.h"
 #include "SubListener.h"
-#include "UObject/Object.h"
-#include "JsonStrSubscriber.generated.h"
+
 
 /**
  * 
  */
-UCLASS()
-class FASTDDSUEPLUGIN_API UJsonStrSubscriber : public UObject
+
+class FASTDDSUEPLUGIN_API JsonStrSubscriber
 {
-	GENERATED_BODY()
 public:
 	bool init();
-	UJsonStrSubscriber();
-	virtual ~UJsonStrSubscriber() override;
+	JsonStrSubscriber();
+	virtual ~JsonStrSubscriber();
 	
 	std::string* Message = nullptr;
 
-	void setParams(FString PName, FString TName);
+	void setParams(int32 DId, FString PName, FString TName, SubListener* SubListener);
 
 private:
 
@@ -45,37 +42,16 @@ private:
 	// 放在init()中作为局部变量，则当init()执行完毕时，会导致heap corruption异常
 	eprosima::fastdds::dds::DataReaderQos rqos;
 	eprosima::fastdds::dds::DomainParticipantQos pqos;
-
-	UPROPERTY()
-	USubListener* _listener;
+	
+	SubListener* _listener;
 
 	UPROPERTY()
 	FString TopicName;
 
 	UPROPERTY()
 	FString ParticipantName;
+
+	UPROPERTY()
+	int32 DomainId = 0;
 	
-	// class SubListener : public eprosima::fastdds::dds::DataReaderListener
-	// {
-	// public:
-	//
-	// 	SubListener() = default;
-	//
-	// 	~SubListener() override = default;
-	//
-	// 	void on_data_available(
-	// 			eprosima::fastdds::dds::DataReader* reader) override;
-	//
-	// 	void on_subscription_matched(
-	// 			eprosima::fastdds::dds::DataReader* reader,
-	// 			const eprosima::fastdds::dds::SubscriptionMatchedStatus& info) override;
-	//
-	// 	// 不能是局部变量，会引发free异常
-	// 	UPROPERTY()
-	// 	JsonStrBean st;
-	// 	int matched = 0;
-	// 	uint32_t samples = 0;
-	// 	std::string getStr;
-	// }
-	// listener_;
 };

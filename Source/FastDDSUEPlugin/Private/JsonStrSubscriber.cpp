@@ -12,12 +12,11 @@
 
 using namespace eprosima::fastdds::dds;
 
-bool UJsonStrSubscriber::init()
+bool JsonStrSubscriber::init()
 {
 	//CREATE THE PARTICIPANT
-
 	pqos.name({TCHAR_TO_UTF8(*ParticipantName)});
-	participant_ = DomainParticipantFactory::get_instance()->create_participant(0, pqos);
+	participant_ = DomainParticipantFactory::get_instance()->create_participant(DomainId, pqos);
 	if (participant_ == nullptr)
 	{
 		return false;
@@ -55,23 +54,23 @@ bool UJsonStrSubscriber::init()
 	return true;
 }
 
-UJsonStrSubscriber::UJsonStrSubscriber()
+JsonStrSubscriber::JsonStrSubscriber()
 	: participant_(nullptr)
 	  , subscriber_(nullptr)
 	  , topic_(nullptr)
 	  , reader_(nullptr)
 	  , type_(new JsonStrBeanPubSubType())
 {
-	_listener = NewObject<USubListener>();
-	Message = &_listener->getStr;
+	_listener = nullptr;
 	ParticipantName = TEXT("Participant_Pub");
 	TopicName = TEXT("myTopic");
 }
 
-UJsonStrSubscriber::~UJsonStrSubscriber()
+JsonStrSubscriber::~JsonStrSubscriber()
 {
 	if (reader_ != nullptr)
 	{
+		_listener->isAvailable = false;
 		subscriber_->delete_datareader(reader_);
 	}
 	if (topic_ != nullptr)
@@ -85,47 +84,10 @@ UJsonStrSubscriber::~UJsonStrSubscriber()
 	DomainParticipantFactory::get_instance()->delete_participant(participant_);
 }
 
-void UJsonStrSubscriber::setParams(FString PName, FString TName)
+void JsonStrSubscriber::setParams(int32 DId, FString PName, FString TName, SubListener* SubListener)
 {
+	DomainId = DId;
 	ParticipantName = PName;
 	TopicName = TName;
+	_listener = SubListener;
 }
-
-// void UJsonStrSubscriber::SubListener::on_data_available(eprosima::fastdds::dds::DataReader* reader)
-// {
-// 	// Take data
-// 	SampleInfo info;
-//
-// 	if (reader->take_next_sample(&st, &info) == ReturnCode_t::RETCODE_OK)
-// 	{
-// 		if (info.valid_data)
-// 		{
-// 			// Print your structure data here.
-// 			// ++samples;
-// 			// std::cout << "Sample received, count=" << samples << std::endl;
-// 			getStr = st.JsonString();
-// 			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, s);
-// 		}
-// 	}
-// }
-
-// void UJsonStrSubscriber::SubListener::on_subscription_matched(eprosima::fastdds::dds::DataReader* reader,
-//                                                             const eprosima::fastdds::dds::SubscriptionMatchedStatus&
-//                                                             info)
-// {
-// 	if (info.current_count_change == 1)
-// 	{
-// 		matched = info.total_count;
-// 		std::cout << "Subscriber matched." << std::endl;
-// 	}
-// 	else if (info.current_count_change == -1)
-// 	{
-// 		matched = info.total_count;
-// 		std::cout << "Subscriber unmatched." << std::endl;
-// 	}
-// 	else
-// 	{
-// 		std::cout << info.current_count_change
-// 			<< " is not a valid value for SubscriptionMatchedStatus current count change" << std::endl;
-// 	}
-// }

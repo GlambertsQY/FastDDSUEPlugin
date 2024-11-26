@@ -13,23 +13,18 @@
 #include <fastdds/dds/publisher/Publisher.hpp>
 #include <fastdds/dds/topic/TypeSupport.hpp>
 
-#include "CoreMinimal.h"
-#include "UObject/Object.h"
-#include "JsonStrPublisher.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class FASTDDSUEPLUGIN_API UJsonStrPublisher : public UObject
+class FASTDDSUEPLUGIN_API JsonStrPublisher
 {
-	GENERATED_BODY()
 
 public:
-	UJsonStrPublisher();
-	virtual ~UJsonStrPublisher() override;
+	JsonStrPublisher();
+	virtual ~JsonStrPublisher();
 	bool init();
-	void setParams(FString PName, FString TName);
+	void setParams(int32 DId, FString PName, FString TName);
 	void SendMessage(FString Message);
 	
 
@@ -45,6 +40,9 @@ public:
 
 	UPROPERTY()
 	FString ParticipantName;
+
+	UPROPERTY()
+	int32 DomainId;
 	
 	class PubListener : public eprosima::fastdds::dds::DataWriterListener
 	{
