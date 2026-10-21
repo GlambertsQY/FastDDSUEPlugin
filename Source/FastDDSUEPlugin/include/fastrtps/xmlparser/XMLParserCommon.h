@@ -42,6 +42,7 @@ extern const char* LIBRARY_SETTINGS;
 extern const char* TRANSPORT_DESCRIPTORS;
 extern const char* PROFILE_NAME;
 extern const char* DEFAULT_PROF;
+extern const char* DOMAINPARTICIPANT_FACTORY;
 extern const char* PARTICIPANT;
 extern const char* PUBLISHER;
 extern const char* SUBSCRIBER;
@@ -60,6 +61,11 @@ extern const char* SEND_BUFFER_SIZE;
 extern const char* TTL;
 extern const char* NON_BLOCKING_SEND;
 extern const char* WHITE_LIST;
+extern const char* NETWORK_INTERFACE;
+extern const char* NETMASK_FILTER;
+extern const char* NETWORK_INTERFACES;
+extern const char* ALLOWLIST;
+extern const char* BLOCKLIST;
 extern const char* MAX_MESSAGE_SIZE;
 extern const char* MAX_INITIAL_PEERS_RANGE;
 extern const char* KEEP_ALIVE_FREQUENCY;
@@ -72,6 +78,9 @@ extern const char* METADATA_LOGICAL_PORT;
 extern const char* LISTENING_PORTS;
 extern const char* CALCULATE_CRC;
 extern const char* CHECK_CRC;
+extern const char* KEEP_ALIVE_THREAD;
+extern const char* ACCEPT_THREAD;
+extern const char* TCP_NEGOTIATION_TIMEOUT;
 extern const char* SEGMENT_SIZE;
 extern const char* PORT_QUEUE_CAPACITY;
 extern const char* PORT_OVERFLOW_POLICY;
@@ -80,7 +89,17 @@ extern const char* HEALTHY_CHECK_TIMEOUT_MS;
 extern const char* DISCARD;
 extern const char* FAIL;
 extern const char* RTPS_DUMP_FILE;
+extern const char* DEFAULT_RECEPTION_THREADS;
+extern const char* RECEPTION_THREADS;
+extern const char* RECEPTION_THREAD;
+extern const char* DUMP_THREAD;
 extern const char* ON;
+extern const char* AUTO;
+extern const char* THREAD_SETTINGS;
+extern const char* SCHEDULING_POLICY;
+extern const char* PRIORITY;
+extern const char* AFFINITY;
+extern const char* STACK_SIZE;
 
 // IntraprocessDeliveryType
 extern const char* OFF;
@@ -96,6 +115,12 @@ extern const char* DATA_READER;
 
 /// LibrarySettings attributes
 extern const char* INTRAPROCESS_DELIVERY;
+
+/// DomainParticipantFactory Qos
+extern const char* ENTITY_FACTORY;
+extern const char* AUTOENABLE_CREATED_ENTITIES;
+extern const char* SHM_WATCHDOG_THREAD;
+extern const char* FILE_WATCH_THREADS;
 
 /// RTPS Participant attributes
 extern const char* ALLOCATION;
@@ -115,8 +140,13 @@ extern const char* PART_ID;
 extern const char* IP4_TO_SEND;
 extern const char* IP6_TO_SEND;
 extern const char* THROUGHPUT_CONT;
+extern const char* FLOW_CONTROLLER_DESCRIPTOR_LIST;
 extern const char* USER_TRANS;
 extern const char* USE_BUILTIN_TRANS;
+extern const char* BUILTIN_TRANS;
+extern const char* MAX_MSG_SIZE_LARGE_DATA;
+extern const char* SOCKETS_SIZE_LARGE_DATA;
+extern const char* NON_BLOCKING_LARGE_DATA;
 extern const char* PROPERTIES_POLICY;
 extern const char* NAME;
 extern const char* REMOTE_LOCATORS;
@@ -131,6 +161,11 @@ extern const char* DYNAMIC_LC;
 extern const char* MAX_PROPERTIES;
 extern const char* MAX_USER_DATA;
 extern const char* MAX_PARTITIONS;
+extern const char* TIMED_EVENTS_THREAD;
+extern const char* DISCOVERY_SERVER_THREAD;
+extern const char* SECURITY_LOG_THREAD;
+extern const char* BUILTIN_TRANSPORTS_RECEPTION_THREADS;
+extern const char* BUILTIN_CONTROLLERS_SENDER_THREAD;
 
 /// Publisher-subscriber attributes
 extern const char* TOPIC;
@@ -148,6 +183,7 @@ extern const char* USER_DEF_ID;
 extern const char* ENTITY_ID;
 extern const char* MATCHED_SUBSCRIBERS_ALLOCATION;
 extern const char* MATCHED_PUBLISHERS_ALLOCATION;
+extern const char* DATA_SHARING_LISTENER_THREAD;
 
 ///
 extern const char* IGN_NON_MATCHING_LOCS;
@@ -175,6 +211,10 @@ extern const char* UDPv6;
 extern const char* TCPv4;
 extern const char* TCPv6;
 extern const char* SHM;
+extern const char* DEFAULT_C;
+extern const char* DEFAULTv6;
+extern const char* LARGE_DATA;
+extern const char* LARGE_DATAv6;
 extern const char* INIT_ACKNACK_DELAY;
 extern const char* HEARTB_RESP_DELAY;
 extern const char* INIT_HEARTB_DELAY;
@@ -255,6 +295,17 @@ extern const char* ALLOCATED_SAMPLES;
 extern const char* EXTRA_SAMPLES;
 extern const char* BYTES_PER_SECOND;
 extern const char* PERIOD_MILLISECS;
+extern const char* FLOW_CONTROLLER_DESCRIPTOR;
+extern const char* SCHEDULER;
+extern const char* SENDER_THREAD;
+extern const char* MAX_BYTES_PER_PERIOD;
+extern const char* PERIOD_MS;
+extern const char* FLOW_CONTROLLER_NAME;
+extern const char* FIFO;
+extern const char* HIGH_PRIORITY;
+extern const char* ROUND_ROBIN;
+extern const char* PRIORITY_WITH_RESERVATION;
+extern const char* FLOW_CONTROLLER_NAME;
 extern const char* PORT_BASE;
 extern const char* DOMAIN_ID_GAIN;
 extern const char* PARTICIPANT_ID_GAIN;

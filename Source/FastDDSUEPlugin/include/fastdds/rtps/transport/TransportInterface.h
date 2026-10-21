@@ -21,10 +21,14 @@
 #include <fastdds/rtps/attributes/PropertyPolicy.h>
 #include <fastdds/rtps/common/Locator.h>
 #include <fastdds/rtps/common/LocatorSelector.hpp>
+#include <fastdds/rtps/common/LocatorSelectorEntry.hpp>
+#include <fastdds/rtps/common/LocatorWithMask.hpp>
 #include <fastdds/rtps/common/PortParameters.h>
+#include <fastdds/rtps/transport/network/AllowedNetworkInterface.hpp>
+#include <fastdds/rtps/transport/network/NetmaskFilterKind.hpp>
+#include <fastdds/rtps/transport/SenderResource.h>
 #include <fastdds/rtps/transport/TransportDescriptorInterface.h>
 #include <fastdds/rtps/transport/TransportReceiverInterface.h>
-#include <fastdds/rtps/transport/SenderResource.h>
 
 namespace eprosima {
 namespace fastdds {
@@ -34,7 +38,8 @@ namespace rtps {
 constexpr uint32_t s_maximumMessageSize = 65500;
 //! Default maximum initial peers range
 constexpr uint32_t s_maximumInitialPeersRange = 4;
-//! Default minimum socket buffer
+// Default minimum socket buffer
+FASTDDS_DEPRECATED_UNTIL(3, s_minimumSocketBuffer, "Minimum socket buffer is now taken from the maximum msg size")
 constexpr uint32_t s_minimumSocketBuffer = 65536;
 //! Default IPv4 address
 static const std::string s_IPv4AddressAny = "0.0.0.0";
@@ -42,6 +47,8 @@ static const std::string s_IPv4AddressAny = "0.0.0.0";
 static const std::string s_IPv6AddressAny = "::";
 
 using SendResourceList = std::vector<std::unique_ptr<fastrtps::rtps::SenderResource>>;
+using NetmaskFilterInfo = std::pair<NetmaskFilterKind, std::vector<AllowedNetworkInterface>>;
+using TransportNetmaskFilterInfo = std::pair<int32_t, NetmaskFilterInfo>;
 
 /**
  * Interface against which to implement a transport layer, decoupled from FastRTPS internals.
@@ -85,10 +92,12 @@ public:
     /**
      * Initialize this transport. This method will prepare all the internals of the transport.
      * @param properties Optional policy to specify additional parameters of the created transport.
+     * @param max_msg_size_no_frag Optional maximum message size to avoid 65500 KB fragmentation limit.
      * @return True when the transport was correctly initialized.
      */
     virtual bool init(
-            const fastrtps::rtps::PropertyPolicy* properties = nullptr) = 0;
+            const fastrtps::rtps::PropertyPolicy* properties = nullptr,
+            const uint32_t& max_msg_size_no_frag = 0) = 0;
 
     /**
      * Must report whether the input channel associated to this locator is open. Channels must either be
@@ -134,6 +143,29 @@ public:
     virtual bool OpenOutputChannel(
             SendResourceList& sender_resource_list,
             const Locator&) = 0;
+
+    /**
+     * Must open the channel that maps to/from the given locator selector entry. This method must allocate,
+     * reserve and mark any resources that are needed for said channel.
+     *
+     * @param sender_resource_list Participant's send resource list.
+     * @param locator_selector_entry Locator selector entry with the remote entity locators.
+     *
+     * @return true if the channel was correctly opened or if finding an already opened one.
+     */
+    virtual bool OpenOutputChannels(
+            SendResourceList& sender_resource_list,
+            const fastrtps::rtps::LocatorSelectorEntry& locator_selector_entry);
+
+    /**
+     * Close the channel that maps to/from the given locator selector entry.
+     *
+     * @param sender_resource_list Participant's send resource list.
+     * @param locator_selector_entry Locator selector entry with the remote entity locators.
+     */
+    virtual void CloseOutputChannels(
+            SendResourceList& sender_resource_list,
+            const fastrtps::rtps::LocatorSelectorEntry& locator_selector_entry);
 
     /** Opens an input channel to receive incoming connections.
      *   If there is an existing channel it registers the receiver interface.
@@ -244,6 +276,42 @@ public:
     int32_t kind() const
     {
         return transport_kind_;
+    }
+
+    /**
+     * Transforms a remote locator into a locator optimized for local communications.
+     *
+     * If the remote locator corresponds to one of the local interfaces, it is converted
+     * to the corresponding local address if allowed by both local and remote transports.
+     *
+     * @param [in]  remote_locator Locator to be converted.
+     * @param [out] result_locator Converted locator.
+     * @param [in]  allowed_remote_localhost Whether localhost is allowed (and hence used) in the remote transport.
+     * @param [in]  allowed_local_localhost Whether localhost is allowed locally (by this or other transport).
+     *
+     * @return false if the input locator is not supported/allowed by this transport, true otherwise.
+     */
+    virtual bool transform_remote_locator(
+            const Locator& remote_locator,
+            Locator& result_locator,
+            bool allowed_remote_localhost,
+            bool allowed_local_localhost) const
+    {
+        static_cast<void>(allowed_remote_localhost);
+        static_cast<void>(allowed_local_localhost);
+        return transform_remote_locator(remote_locator, result_locator);
+    }
+
+    //! Must report whether localhost locator is allowed
+    virtual bool is_localhost_allowed() const
+    {
+        return false;
+    }
+
+    //! Returns netmask filter information (transport's netmask filter kind and allowlist)
+    virtual NetmaskFilterInfo netmask_filter_info() const
+    {
+        return {NetmaskFilterKind::AUTO, {}};
     }
 
 protected:

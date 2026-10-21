@@ -1,13 +1,13 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
+	"Version": 2,
+	"VersionName": "2.0",
 	"FriendlyName": "FastDDSUEPlugin",
-	"Description": "",
-	"Category": "Other",
-	"CreatedBy": "",
+	"Description": "Cross-platform Fast DDS 2.14 (LTS) integration: create publishers/subscribers with TopicName, DomainID and ParticipantName.",
+	"Category": "Networking",
+	"CreatedBy": "WenHao_Yang",
 	"CreatedByURL": "",
-	"DocsURL": "",
+	"DocsURL": "https://github.com/GlambertsQY/FastDDSUEPlugin",
 	"MarketplaceURL": "",
 	"SupportURL": "",
 	"CanContainContent": true,
@@ -16,8 +16,7 @@
 	"Installed": false,
 	"SupportedTargetPlatforms": [
 		"Win64",
-		"Android",
-		"HoloLens"
+		"Android"
 	],
 	"Modules": [
 		{

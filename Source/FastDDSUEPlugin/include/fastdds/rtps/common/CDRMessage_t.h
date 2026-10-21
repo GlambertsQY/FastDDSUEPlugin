@@ -96,12 +96,51 @@ struct RTPS_DllAPI CDRMessage_t final
             const SerializedPayload_t& payload)
         : wraps(true)
     {
-        msg_endian = payload.encapsulation == PL_CDR_BE ? BIGEND : LITTLEEND;
+        msg_endian = LITTLEEND;
+        if (payload.encapsulation == PL_CDR_BE || payload.encapsulation == CDR_BE)
+        {
+            msg_endian = BIGEND;
+        }
         pos = payload.pos;
         length = payload.length;
         buffer = payload.data;
         max_size = payload.max_size;
         reserved_size = payload.max_size;
+    }
+
+    /**
+     * @brief Wraps a portion of a CDRMessage_t into a new CDRMessage_t.
+     *
+     * @param other                         The CDRMessage_t to wrap from.
+     * @param length_from_current_position  The length of the portion to wrap,
+                                            starting from the current position of `other`.
+     *
+     * @return A new CDRMessage_t wrapping the specified portion.
+     *
+     * Note: If the specified length exceeds the available data in `other`,
+     * the returned CDRMessage_t will have length zero and buffer set to nullptr.
+     */
+    static CDRMessage_t wrap_from_other_message(
+            const CDRMessage_t& other,
+            uint32_t length_from_current_position)
+    {
+        CDRMessage_t msg(0);
+        // Fail if length exceeds available data
+        if (other.length - other.pos < length_from_current_position)
+        {
+            // Error is indicated by length being zero and buffer being nullptr
+        }
+        else
+        {
+            msg.wraps = true;
+            msg.pos = 0;
+            msg.length = length_from_current_position;
+            msg.max_size = length_from_current_position;
+            msg.reserved_size = other.reserved_size;
+            msg.msg_endian = other.msg_endian;
+            msg.buffer = &other.buffer[other.pos];
+        }
+        return msg;
     }
 
     CDRMessage_t(

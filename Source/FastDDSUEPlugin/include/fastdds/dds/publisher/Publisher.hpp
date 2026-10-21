@@ -155,13 +155,15 @@ public:
      * @param qos QoS of the DataWriter.
      * @param listener Pointer to the listener (default: nullptr).
      * @param mask StatusMask that holds statuses the listener responds to (default: all).
+     * @param payload_pool IPayloadPool shared pointer that defines writer payload (default: nullptr).
      * @return Pointer to the created DataWriter. nullptr if failed.
      */
     RTPS_DllAPI DataWriter* create_datawriter(
             Topic* topic,
             const DataWriterQos& qos,
             DataWriterListener* listener = nullptr,
-            const StatusMask& mask = StatusMask::all());
+            const StatusMask& mask = StatusMask::all(),
+            std::shared_ptr<fastrtps::rtps::IPayloadPool> payload_pool = nullptr);
 
     /**
      * This operation creates a DataWriter. The returned DataWriter will be attached and belongs to the Publisher.
@@ -170,13 +172,15 @@ public:
      * @param profile_name DataWriter profile name.
      * @param listener Pointer to the listener (default: nullptr).
      * @param mask StatusMask that holds statuses the listener responds to (default: all).
+     * @param payload_pool IPayloadPool shared pointer that defines writer payload (default: nullptr).
      * @return Pointer to the created DataWriter. nullptr if failed.
      */
     RTPS_DllAPI DataWriter* create_datawriter_with_profile(
             Topic* topic,
             const std::string& profile_name,
             DataWriterListener* listener = nullptr,
-            const StatusMask& mask = StatusMask::all());
+            const StatusMask& mask = StatusMask::all(),
+            std::shared_ptr<fastrtps::rtps::IPayloadPool> payload_pool = nullptr);
 
     /**
      * This operation deletes a DataWriter that belongs to the Publisher.
@@ -213,6 +217,7 @@ public:
      * @brief Indicates to FastDDS that the contained DataWriters are about to be modified
      *
      * @return RETCODE_OK if successful, an error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t suspend_publications();
@@ -221,6 +226,7 @@ public:
      * @brief Indicates to FastDDS that the modifications to the DataWriters are complete.
      *
      * @return RETCODE_OK if successful, an error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t resume_publications();
@@ -229,6 +235,7 @@ public:
      * @brief Signals the beginning of a set of coherent cache changes using the Datawriters attached to the publisher
      *
      * @return RETCODE_OK if successful, an error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t begin_coherent_changes();
@@ -237,6 +244,7 @@ public:
      * @brief Signals the end of a set of coherent cache changes
      *
      * @return RETCODE_OK if successful, an error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t end_coherent_changes();
@@ -318,11 +326,12 @@ public:
      * @param[out] writer_qos
      * @param[in] topic_qos
      * @return RETCODE_OK if successful, an error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
-    RTPS_DllAPI ReturnCode_t copy_from_topic_qos(
+    RTPS_DllAPI static ReturnCode_t copy_from_topic_qos(
             fastdds::dds::DataWriterQos& writer_qos,
-            const fastdds::dds::TopicQos& topic_qos) const;
+            const fastdds::dds::TopicQos& topic_qos);
 
     /**
      * Fills the DataWriterQos with the values of the XML profile.

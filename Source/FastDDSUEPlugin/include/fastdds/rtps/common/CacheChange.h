@@ -19,8 +19,9 @@
 #ifndef _FASTDDS_RTPS_CACHECHANGE_H_
 #define _FASTDDS_RTPS_CACHECHANGE_H_
 
-#include <cassert>
 #include <atomic>
+#include <cassert>
+#include <limits>
 
 #include <fastdds/rtps/common/ChangeKind_t.hpp>
 #include <fastdds/rtps/common/FragmentNumber.h>
@@ -28,8 +29,8 @@
 #include <fastdds/rtps/common/SerializedPayload.h>
 #include <fastdds/rtps/common/Time_t.h>
 #include <fastdds/rtps/common/Types.h>
+#include <fastdds/rtps/common/VendorId_t.hpp>
 #include <fastdds/rtps/common/WriteParams.h>
-
 #include <fastdds/rtps/history/IPayloadPool.h>
 
 namespace eprosima {
@@ -90,6 +91,9 @@ struct RTPS_DllAPI CacheChange_t
     bool isRead = false;
     //!Source TimeStamp
     Time_t sourceTimestamp{};
+    //! Vendor Id of the writer that generated this change.
+    fastdds::rtps::VendorId_t vendor_id = c_VendorId_Unknown;
+
     union
     {
         CacheChangeReaderInfo_t reader_info;
@@ -143,6 +147,7 @@ struct RTPS_DllAPI CacheChange_t
         reader_info.receptionTimestamp = ch_ptr->reader_info.receptionTimestamp;
         write_params = ch_ptr->write_params;
         isRead = ch_ptr->isRead;
+        vendor_id = ch_ptr->vendor_id;
         fragment_size_ = ch_ptr->fragment_size_;
         fragment_count_ = ch_ptr->fragment_count_;
         first_missing_fragment_ = ch_ptr->first_missing_fragment_;
@@ -166,6 +171,7 @@ struct RTPS_DllAPI CacheChange_t
         reader_info.receptionTimestamp = ch_ptr->reader_info.receptionTimestamp;
         write_params = ch_ptr->write_params;
         isRead = ch_ptr->isRead;
+        vendor_id = ch_ptr->vendor_id;
 
         // Copy certain values from serializedPayload
         serializedPayload.encapsulation = ch_ptr->serializedPayload.encapsulation;
@@ -263,8 +269,7 @@ struct RTPS_DllAPI CacheChange_t
             {
                 // Keep index of next fragment on the payload portion at the beginning of each fragment. Last
                 // fragment will have fragment_count_ as 'next fragment index'
-                size_t offset = 0;
-                for (uint32_t i = 1; i <= fragment_count_; i++, offset += fragment_size_)
+                for (uint32_t i = 1; i <= fragment_count_; i++)
                 {
                     set_next_missing_fragment(i - 1, i);  // index to next fragment in missing list
                 }
@@ -293,17 +298,16 @@ struct RTPS_DllAPI CacheChange_t
             return false;
         }
 
-        // validate lengths
-        if (last_fragment_index < fragment_count_)
-        {
-            if (incoming_data.length < incoming_length)
-            {
-                return false;
-            }
-        }
-        else
+        // Update incoming length for last fragment
+        if (last_fragment_index == fragment_count_)
         {
             incoming_length = serializedPayload.length - original_offset;
+        }
+
+        // Validate lengths
+        if (incoming_data.length < incoming_length)
+        {
+            return false;
         }
 
         if (original_offset + incoming_length > serializedPayload.length)
@@ -335,6 +339,62 @@ struct RTPS_DllAPI CacheChange_t
             IPayloadPool* owner)
     {
         payload_owner_ = owner;
+    }
+
+    /**
+     * @brief Calculate the minimum required payload size to store a fragmented change.
+     *
+     * @param[in]  payload_size       Size of the full payload.
+     * @param[in]  fragment_size      Size of each fragment.
+     * @param[out] min_required_size  Minimum required size to store the fragmented payload.
+     */
+    static bool calculate_required_fragmented_payload_size(
+            uint32_t payload_size,
+            uint16_t fragment_size,
+            uint32_t& min_required_size)
+    {
+        if ((0 == fragment_size) || (payload_size <= fragment_size))
+        {
+            min_required_size = payload_size;
+            return true;
+        }
+
+        // In order to avoid overflow on the calculations, we limit the maximum payload size
+        constexpr uint32_t MAX_PAYLOAD_SIZE = std::numeric_limits<uint32_t>::max() - 4u - 3u;
+        if (payload_size > MAX_PAYLOAD_SIZE)
+        {
+            return false;
+        }
+
+        // Ensure fragment size is at least 4 bytes to store fragment index
+        if (fragment_size < 4u)
+        {
+            return false;
+        }
+
+        // Calculate number of fragments without risk of overflow
+        uint32_t fragment_count = payload_size / fragment_size;
+        if (0 != (payload_size % fragment_size))
+        {
+            ++fragment_count;
+        }
+
+        // This cannot overflow as the result will always be <= payload_size
+        uint32_t last_fragment_offset = (fragment_count - 1) * fragment_size;
+
+        // Since we will write a fragment index at the beginning of each fragment,
+        // we need to ensure there is space for it in the last fragment.
+        // Note: we already imposed limits to ensure no overflow occurs.
+        min_required_size = (last_fragment_offset + 3u) & ~3u; // Align last fragment size to 4 bytes
+        min_required_size += 4u; // Add fragment index size
+
+        // Ensure minimum size is at least payload size
+        if (min_required_size < payload_size)
+        {
+            min_required_size = payload_size;
+        }
+
+        return true;
     }
 
 private:

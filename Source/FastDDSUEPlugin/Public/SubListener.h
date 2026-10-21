@@ -1,4 +1,7 @@
-﻿#pragma once
+#pragma once
+
+#include <atomic>
+
 #include "JsonStr.h"
 #include "fastdds/dds/subscriber/DataReaderListener.hpp"
 
@@ -21,7 +24,8 @@ public:
 
 	// 不能是局部变量，会引发free异常
 	JsonStrBean st;
-	int matched = 0;
+	// Written on the DDS listener thread, read on the game thread.
+	std::atomic<int> matched{0};
 	bool isAvailable = true;
 	uint32_t samples = 0;
 };

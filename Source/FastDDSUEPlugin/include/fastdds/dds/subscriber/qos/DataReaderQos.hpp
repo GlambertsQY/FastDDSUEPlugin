@@ -21,13 +21,12 @@
 #define _FASTDDS_DATAREADERQOS_HPP
 
 #include <fastdds/dds/core/policy/QosPolicies.hpp>
+#include <fastdds/dds/core/policy/ReaderDataLifecycleQosPolicy.hpp>
 #include <fastdds/dds/subscriber/qos/ReaderQos.hpp>
 #include <fastdds/dds/subscriber/qos/SubscriberQos.hpp>
-#include <fastdds/dds/core/policy/ReaderDataLifecycleQosPolicy.hpp>
-
 #include <fastdds/rtps/attributes/ReaderAttributes.h>
 #include <fastrtps/attributes/TopicAttributes.h>
-
+#include <fastrtps/fastrtps_dll.h>
 
 namespace eprosima {
 namespace fastdds {
@@ -893,7 +892,6 @@ private:
     //!Reader Data Lifecycle Qos, NOT implemented in the library.
     ReaderDataLifecycleQosPolicy reader_data_lifecycle_;
 
-
     //!Lifespan Qos (Extension).
     LifespanQosPolicy lifespan_;
 
@@ -923,6 +921,7 @@ private:
 };
 
 RTPS_DllAPI extern const DataReaderQos DATAREADER_QOS_DEFAULT;
+RTPS_DllAPI extern const DataReaderQos DATAREADER_QOS_USE_TOPIC_QOS;
 
 } // namespace dds
 } // namespace fastdds

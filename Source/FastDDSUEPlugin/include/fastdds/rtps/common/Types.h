@@ -19,14 +19,13 @@
 #ifndef _FASTDDS_RTPS_COMMON_TYPES_H_
 #define _FASTDDS_RTPS_COMMON_TYPES_H_
 
-#include <stddef.h>
-#include <iostream>
+#include <cstddef>
 #include <cstdint>
-#include <stdint.h>
-
-#include <fastrtps/fastrtps_dll.h>
+#include <cstdint>
+#include <iostream>
 
 #include <fastdds/rtps/common/VendorId_t.hpp>
+#include <fastrtps/fastrtps_dll.h>
 
 namespace eprosima {
 namespace fastrtps {
@@ -34,7 +33,6 @@ namespace rtps {
 
 /*!
  * @brief This enumeration represents endianness types.
- * @ingroup COMMON_MODULE
  */
 enum Endianness_t
 {
@@ -44,38 +42,35 @@ enum Endianness_t
     LITTLEEND = 0x0
 };
 
-//!Reliability enum used for internal purposes
-//!@ingroup COMMON_MODULE
+//! Reliability enum used for internal purposes
 typedef enum ReliabilityKind_t
 {
     RELIABLE,
     BEST_EFFORT
-}ReliabilityKind_t;
+} ReliabilityKind_t;
 
-//!Durability kind
-//!@ingroup COMMON_MODULE
+//! Durability kind
 typedef enum DurabilityKind_t
 {
     VOLATILE,        //!< Volatile Durability
     TRANSIENT_LOCAL, //!< Transient Local Durability
     TRANSIENT,       //!< Transient Durability.
     PERSISTENT       //!< NOT IMPLEMENTED.
-}DurabilityKind_t;
+} DurabilityKind_t;
 
-//!Endpoint kind
-//!@ingroup COMMON_MODULE
+//! Endpoint kind
 typedef enum EndpointKind_t
 {
     READER,
     WRITER
-}EndpointKind_t;
+} EndpointKind_t;
 
-//!Topic kind
+//! Topic kind
 typedef enum TopicKind_t
 {
     NO_KEY,
     WITH_KEY
-}TopicKind_t;
+} TopicKind_t;
 
 #if FASTDDS_IS_BIG_ENDIAN_TARGET
 constexpr Endianness_t DEFAULT_ENDIAN = BIGEND;
@@ -84,10 +79,9 @@ constexpr Endianness_t DEFAULT_ENDIAN = LITTLEEND;
 #endif // if FASTDDS_IS_BIG_ENDIAN_TARGET
 
 using octet = unsigned char;
-//typedef unsigned int uint;
-//typedef unsigned short ushort;
 using SubmessageFlag = unsigned char;
 using BuiltinEndpointSet_t = uint32_t;
+using NetworkConfigSet_t = uint32_t;
 using Count_t = uint32_t;
 
 #define BIT0 0x01u
@@ -106,6 +100,7 @@ struct RTPS_DllAPI ProtocolVersion_t
 {
     octet m_major;
     octet m_minor;
+
     ProtocolVersion_t():
 #if HAVE_SECURITY
         // As imposed by DDSSEC11-93
@@ -161,9 +156,11 @@ const ProtocolVersion_t c_ProtocolVersion_2_3{2, 3};
 const ProtocolVersion_t c_ProtocolVersion;
 
 //!@brief Structure VendorId_t, specifying the vendor Id of the implementation.
+FASTDDS_TODO_BEFORE(3, 0, "Remove eprosima::fastrtps::rtps::VendorId_t usings");
 using VendorId_t = eprosima::fastdds::rtps::VendorId_t;
 using eprosima::fastdds::rtps::c_VendorId_Unknown;
 using eprosima::fastdds::rtps::c_VendorId_eProsima;
+using eprosima::fastdds::rtps::c_VendorId_SafeDDS;
 
 } // namespace rtps
 } // namespace fastrtps

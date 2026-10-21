@@ -22,9 +22,12 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS_PUBLIC
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include <fastdds/rtps/attributes/RTPSParticipantAttributes.h>
 #include <fastdds/rtps/builtin/data/ReaderProxyData.h>
@@ -33,13 +36,22 @@
 #include <fastdds/rtps/participant/ParticipantDiscoveryInfo.h>
 #include <fastdds/rtps/reader/ReaderDiscoveryInfo.h>
 #include <fastdds/rtps/writer/WriterDiscoveryInfo.h>
+#include <fastdds/statistics/rtps/monitor_service/interfaces/IProxyQueryable.hpp>
 #include <fastrtps/qos/QosPolicies.h>
-#include <fastrtps/utils/ProxyPool.hpp>
 #include <fastrtps/utils/collections/ResourceLimitedVector.hpp>
+#include <fastrtps/utils/ProxyPool.hpp>
 
 namespace eprosima {
 
 namespace fastdds {
+namespace statistics {
+namespace rtps {
+
+struct IProxyObserver;
+
+} // namespace rtps
+} // namespace statistics
+
 namespace rtps {
 
 class PDPServerListener;
@@ -61,6 +73,7 @@ class RTPSWriter;
 class RTPSReader;
 class WriterHistory;
 class ReaderHistory;
+struct RTPSParticipantAllocationAttributes;
 class RTPSParticipantImpl;
 class RTPSParticipantListener;
 class BuiltinProtocols;
@@ -70,6 +83,7 @@ class ReaderProxyData;
 class WriterProxyData;
 class ParticipantProxyData;
 class ReaderListener;
+class PDPEndpoints;
 class PDPListener;
 class PDPServerListener;
 class ITopicPayloadPool;
@@ -79,7 +93,7 @@ class ITopicPayloadPool;
  * It also keeps the Participant Discovery Data and provides interfaces to access it
  *@ingroup DISCOVERY_MODULE
  */
-class PDP
+class PDP : public fastdds::statistics::rtps::IProxyQueryable
 {
     friend class PDPListener;
     friend class PDPServerListener;
@@ -90,7 +104,7 @@ public:
 
     /**
      * Constructor
-     * @param builtin Pointer to the BuiltinProcols object.
+     * @param builtin Pointer to the BuiltinProtocols object.
      * @param allocation Participant allocation parameters.
      */
     PDP(
@@ -116,6 +130,11 @@ public:
      * @return true if enabled correctly, or if already enabled; false otherwise
      */
     bool enable();
+
+    /**
+     * @brief Disable the Participant Discovery Protocol
+     */
+    void disable();
 
     virtual bool init(
             RTPSParticipantImpl* part) = 0;
@@ -253,7 +272,7 @@ public:
     /**
      * This method removes and deletes a WriterProxyData object from its corresponding RTPSParticipant.
      *
-     * @param[in] writer_guid GUID_t of the wtiter to remove.
+     * @param[in] writer_guid GUID_t of the writer to remove.
      * @return true if found and deleted.
      */
     bool removeWriterProxyData(
@@ -262,7 +281,7 @@ public:
     /**
      * This method removes and deletes a WriterProxyData object from its corresponding RTPSParticipant.
      *
-     * @param[in] writer_guid GUID_t of the wtiter to remove.
+     * @param[in] writer_guid GUID_t of the writer to remove.
      * @param[in] reason Why the writer is being removed (dropped, removed, or ignored)
      * @return true if found and deleted.
      */
@@ -328,9 +347,9 @@ public:
      * Get a pointer to the local RTPSParticipant ParticipantProxyData object.
      * @return Pointer to the local RTPSParticipant ParticipantProxyData object.
      */
-    ParticipantProxyData* getLocalParticipantProxyData()
+    ParticipantProxyData* getLocalParticipantProxyData() const
     {
-        return participant_proxies_.front();
+        return participant_proxies_.empty() ? nullptr : participant_proxies_.front();
     }
 
     /**
@@ -358,6 +377,15 @@ public:
     ResourceLimitedVector<ParticipantProxyData*>::const_iterator ParticipantProxiesEnd()
     {
         return participant_proxies_.end();
+    }
+
+    /**
+     * Get the number of participant proxies.
+     * @return size_t.
+     */
+    size_t participant_proxies_number()
+    {
+        return participant_proxies_number_;
     }
 
     /**
@@ -420,7 +448,15 @@ public:
         return temp_writer_proxies_;
     }
 
+    ReaderAttributes create_builtin_reader_attributes() const;
+
+    WriterAttributes create_builtin_writer_attributes() const;
+
 #if HAVE_SECURITY
+    void add_builtin_security_attributes(
+            ReaderAttributes& ratt,
+            WriterAttributes& watt) const;
+
     virtual bool pairing_remote_writer_with_local_reader_after_security(
             const GUID_t& local_reader,
             const WriterProxyData& remote_writer_data);
@@ -429,6 +465,38 @@ public:
             const GUID_t& local_writer,
             const ReaderProxyData& remote_reader_data);
 #endif // HAVE_SECURITY
+
+#ifdef FASTDDS_STATISTICS
+    bool get_all_local_proxies(
+            std::vector<GUID_t>& guids) override;
+
+    bool get_serialized_proxy(
+            const GUID_t& guid,
+            CDRMessage_t* msg) override;
+
+    void set_proxy_observer(
+            const fastdds::statistics::rtps::IProxyObserver* proxy_observer);
+
+    const fastdds::statistics::rtps::IProxyObserver* get_proxy_observer()
+    {
+        return proxy_observer_.load();
+    }
+
+#else
+    bool get_all_local_proxies(
+            std::vector<GUID_t>&) override
+    {
+        return false;
+    }
+
+    bool get_serialized_proxy(
+            const GUID_t&,
+            CDRMessage_t*) override
+    {
+        return false;
+    }
+
+#endif // FASTDDS_STATISTICS
 
 protected:
 
@@ -458,8 +526,6 @@ protected:
     ResourceLimitedVector<WriterProxyData*> writer_proxies_pool_;
     //!Variable to indicate if any parameter has changed.
     std::atomic_bool m_hasChangedLocalPDP;
-    //!Listener for the SPDP messages.
-    ReaderListener* mp_listener;
     //! ProxyPool for temporary reader proxies
     ProxyPool<ReaderProxyData> temp_reader_proxies_;
     //! ProxyPool for temporary writer proxies
@@ -531,6 +597,16 @@ protected:
      */
     virtual void update_builtin_locators() = 0;
 
+    void notify_and_maybe_ignore_new_participant(
+            ParticipantProxyData* pdata,
+            bool& should_be_ignored);
+
+#ifdef FASTDDS_STATISTICS
+
+    std::atomic<const fastdds::statistics::rtps::IProxyObserver*> proxy_observer_;
+
+#endif // FASTDDS_STATISTICS
+
 private:
 
     //!TimedEvent to periodically resend the local RTPSParticipant information.
@@ -573,8 +649,23 @@ private:
      */
     void set_external_participant_properties_(
             ParticipantProxyData* participant_data);
-};
 
+    /**
+     * Performs all the necessary actions after removing a ParticipantProxyData from the
+     * participant_proxies_ collection.
+     *
+     * @param pdata ParticipantProxyData that was removed.
+     * @param partGUID GUID of the removed participant.
+     * @param reason Reason why the participant was removed.
+     * @param listener Listener to be notified of the unmatches / removal.
+     */
+    void actions_on_remote_participant_removed(
+            ParticipantProxyData* pdata,
+            const GUID_t& partGUID,
+            ParticipantDiscoveryInfo::DISCOVERY_STATUS reason,
+            RTPSParticipantListener* listener);
+
+};
 
 // configuration values for PDP reliable entities.
 extern const Duration_t pdp_heartbeat_period;

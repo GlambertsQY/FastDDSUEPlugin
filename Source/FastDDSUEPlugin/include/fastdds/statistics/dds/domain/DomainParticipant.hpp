@@ -22,7 +22,9 @@
 
 #include <string>
 
+#include <fastdds/dds/core/status/StatusMask.hpp>
 #include <fastdds/dds/domain/DomainParticipant.hpp>
+#include <fastdds/dds/domain/DomainParticipantFactory.hpp>
 #include <fastdds/dds/publisher/qos/DataWriterQos.hpp>
 #include <fastrtps/fastrtps_dll.h>
 #include <fastrtps/types/TypesBase.h>
@@ -30,8 +32,18 @@
 using eprosima::fastrtps::types::ReturnCode_t;
 
 namespace eprosima {
+namespace fastrtps {
+namespace rtps {
+
+class ReaderProxyData;
+class WriterProxyData;
+} // namespace rtps
+} // namespace fastrtps
 namespace fastdds {
 namespace statistics {
+
+class MonitorServiceStatusData;
+
 namespace dds {
 
 /**
@@ -42,6 +54,13 @@ namespace dds {
 class DomainParticipant : public eprosima::fastdds::dds::DomainParticipant
 {
     DomainParticipant() = delete;
+
+protected:
+
+    DomainParticipant(
+            const eprosima::fastdds::dds::StatusMask& mask);
+
+    friend class eprosima::fastdds::dds::DomainParticipantFactory;
 
 public:
 
@@ -103,6 +122,107 @@ public:
      */
     RTPS_DllAPI static const DomainParticipant* narrow(
             const eprosima::fastdds::dds::DomainParticipant* domain_participant);
+
+    /**
+     * Enables the monitor service in the DomainParticipant.
+     *
+     * @return RETCODE_OK if the monitor service could be correctly enabled.
+     * @return RETCODE_ERROR if the monitor service could not be enabled properly.
+     * @return RETCODE_UNSUPPORTED if FASTDDS_STATISTICS is not enabled.
+     *
+     * @note Not supported yet. Currently returns RETCODE_UNSUPPORTED
+     */
+    RTPS_DllAPI ReturnCode_t enable_monitor_service();
+
+    /**
+     * Disables the monitor service in this DomainParticipant. Does nothing if the service was not enabled before.
+     *
+     * @return RETCODE_OK if the monitor service could be correctly disabled.
+     * @return RETCODE_NOT_ENABLED if the monitor service was not previously enabled.
+     * @return RETCODE_ERROR if the service could not be properly disabled.
+     * @return RETCODE_UNSUPPORTED if FASTDDS_STATISTICS is not enabled.
+     *
+     * @note Not supported yet. Currently returns RETCODE_UNSUPPORTED
+     */
+    RTPS_DllAPI ReturnCode_t disable_monitor_service();
+
+    /**
+     * fills in the ParticipantProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::ParticipantProxyData& data,
+            statistics::MonitorServiceStatusData& msg);
+
+    /**
+     * fills in the WriterProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill.
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::WriterProxyData& data,
+            statistics::MonitorServiceStatusData& msg);
+
+    /**
+     * fills in the ReaderProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill.
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::ReaderProxyData& data,
+            statistics::MonitorServiceStatusData& msg);
+
+    /**
+     * fills in the ParticipantProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::ParticipantProxyData& data,
+            const statistics::MonitorServiceStatusData& msg);
+
+    /**
+     * fills in the WriterProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill.
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::WriterProxyData& data,
+            const statistics::MonitorServiceStatusData& msg);
+
+    /**
+     * fills in the ReaderProxyData from a MonitorService Message
+     *
+     * @param [out] data Proxy to fill.
+     * @param [in] msg MonitorService Message to get the proxy information from.
+     *
+     * @return RETCODE_OK if the operation succeeds.
+     * @return RETCODE_ERROR if the  operation fails.
+     */
+    RTPS_DllAPI ReturnCode_t fill_discovery_data_from_cdr_message(
+            fastrtps::rtps::ReaderProxyData& data,
+            const statistics::MonitorServiceStatusData& msg);
 
 };
 

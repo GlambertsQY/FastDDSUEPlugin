@@ -22,12 +22,11 @@
 #ifndef _FAST_DDS_GENERATED_FASTDDSJSONSTR_H_
 #define _FAST_DDS_GENERATED_FASTDDSJSONSTR_H_
 
+#pragma warning(push)
 #pragma warning(disable : 4668)
 #pragma warning(disable : 4582)
 #pragma warning(disable : 4265)
 #pragma warning(disable : 4530)
-
-#include <fastrtps/utils/fixed_size_string.hpp>
 
 #include <stdint.h>
 #include <array>
@@ -215,6 +214,8 @@ private:
     std::string m_JsonString;
 
 };
+
+#pragma warning(pop)
 
 #endif // _FAST_DDS_GENERATED_FASTDDSJSONSTR_H_
 

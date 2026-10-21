@@ -21,17 +21,18 @@
 
 #include <functional>
 
-#include <fastdds/rtps/Endpoint.h>
 #include <fastdds/rtps/attributes/ReaderAttributes.h>
 #include <fastdds/rtps/builtin/data/WriterProxyData.h>
 #include <fastdds/rtps/common/SequenceNumber.h>
 #include <fastdds/rtps/common/Time_t.h>
+#include <fastdds/rtps/common/VendorId_t.hpp>
+#include <fastdds/rtps/Endpoint.h>
 #include <fastdds/rtps/history/ReaderHistory.h>
 #include <fastdds/rtps/interfaces/IReaderDataFilter.hpp>
+#include <fastdds/statistics/rtps/monitor_service/connections_fwd.hpp>
+#include <fastdds/statistics/rtps/StatisticsCommon.hpp>
 #include <fastrtps/qos/LivelinessChangedStatus.h>
 #include <fastrtps/utils/TimedConditionVariable.hpp>
-
-#include <fastdds/statistics/rtps/StatisticsCommon.hpp>
 
 namespace eprosima {
 namespace fastrtps {
@@ -45,6 +46,7 @@ struct CacheChange_t;
 struct ReaderHistoryState;
 class WriterProxyData;
 class IDataSharingListener;
+struct LocalReaderPointer;
 
 /**
  * Class RTPSReader, manages the reception of data from its matched writers.
@@ -117,10 +119,12 @@ public:
             const GUID_t& writer_guid) = 0;
 
     /**
-     * Processes a new DATA message. Previously the message must have been accepted by function acceptMsgDirectedTo.
+     * @brief Process an incoming DATA message.
      *
-     * @param change Pointer to the CacheChange_t.
-     * @return true if the reader accepts messages from the.
+     * @param change  Pointer to the incoming CacheChange_t.
+     *
+     * @return true if the reader processed the message.
+     * @return false if the reader could not process the message, but would be able to do so in the future.
      */
     RTPS_DllAPI virtual bool processDataMsg(
             CacheChange_t* change) = 0;
@@ -148,6 +152,7 @@ public:
      * @param lastSN
      * @param finalFlag
      * @param livelinessFlag
+     * @param origin_vendor_id
      * @return true if the reader accepts messages from the.
      */
     RTPS_DllAPI virtual bool processHeartbeatMsg(
@@ -156,19 +161,27 @@ public:
             const SequenceNumber_t& firstSN,
             const SequenceNumber_t& lastSN,
             bool finalFlag,
-            bool livelinessFlag) = 0;
+            bool livelinessFlag,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) = 0;
 
     /**
      * Processes a new GAP message.
      * @param writerGUID
      * @param gapStart
      * @param gapList
+     * @param origin_vendor_id
      * @return true if the reader accepts messages from the.
      */
     RTPS_DllAPI virtual bool processGapMsg(
             const GUID_t& writerGUID,
             const SequenceNumber_t& gapStart,
-            const SequenceNumberSet_t& gapList) = 0;
+            const SequenceNumberSet_t& gapList,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) = 0;
+
+    /**
+     * @brief Waits for not being referenced/used by any other entity.
+     */
+    virtual void local_actions_on_reader_removed();
 
     /**
      * Method to indicate the reader that some change has been removed due to HistoryQos requirements.
@@ -321,22 +334,26 @@ public:
      * @param [in] change        Pointer to the change being accessed.
      * @param [in] wp            Writer proxy the @c change belongs to.
      * @param [in] mark_as_read  Whether the @c change should be marked as read or not.
+     * @param [in] should_send_ack Whether an ACKNACK should be sent to the writer.
      */
     virtual void end_sample_access_nts(
             CacheChange_t* change,
             WriterProxy*& wp,
-            bool mark_as_read) = 0;
+            bool mark_as_read,
+            bool should_send_ack = false) = 0;
 
     /**
      * Called when the user has retrieved a change from the history.
      * @param change Pointer to the change to ACK
      * @param writer Writer proxy of the \c change.
      * @param mark_as_read Whether the \c change should be marked as read or not
+     * @param should_send_ack Whether an ACKNACK should be sent to the writer
      */
     virtual void change_read_by_user(
             CacheChange_t* change,
             WriterProxy* writer,
-            bool mark_as_read = true) = 0;
+            bool mark_as_read = true,
+            bool should_send_ack = false) = 0;
 
     /**
      * Checks whether the sample is still valid or is corrupted.
@@ -384,6 +401,15 @@ public:
      */
     RTPS_DllAPI void set_enabled_statistics_writers_mask(
             uint32_t enabled_writers);
+
+    /**
+     * @brief Get the connection list of this reader
+     *
+     * @param [out] connection_list of the reader
+     * @return True if could be retrieved
+     */
+    RTPS_DllAPI virtual bool get_connections(
+            fastdds::statistics::rtps::ConnectionList& connection_list) = 0;
 
 #endif // FASTDDS_STATISTICS
 
@@ -471,6 +497,28 @@ protected:
     bool is_datasharing_compatible_with(
             const WriterProxyData& wdata);
 
+    /**
+     * @brief Reserve a CacheChange_t.
+     *
+     * @param [in]  cdr_payload_size  Size of the received payload.
+     * @param [in]  fragment_size     Size of each fragment (0 if not fragmented).
+     * @param [out] change            Pointer to the reserved change.
+     *
+     * @return True if correctly reserved.
+     */
+    bool reserve_cache(
+            uint32_t cdr_payload_size,
+            uint16_t fragment_size,
+            CacheChange_t*& change);
+
+    /**
+     * @brief Retrieves the local pointer to this reader
+     * to be used by other local entities.
+     *
+     * @return Local pointer to this reader.
+     */
+    std::shared_ptr<LocalReaderPointer> get_local_pointer();
+
     //!ReaderHistory
     ReaderHistory* mp_history;
     //!Listener
@@ -481,6 +529,10 @@ protected:
     bool m_acceptMessagesFromUnkownWriters;
     //!Trusted writer (for Builtin)
     EntityId_t m_trustedWriterEntityId;
+
+    /// RefCountedPointer of this instance.
+    std::shared_ptr<LocalReaderPointer> local_ptr_;
+
     //!Expects Inline Qos.
     bool m_expectsInlineQos;
 

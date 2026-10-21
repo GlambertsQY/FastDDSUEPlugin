@@ -15,19 +15,26 @@
 #ifndef XML_PARSER_H_
 #define XML_PARSER_H_
 
-#include <stdio.h>
-#include <fastrtps/transport/TransportDescriptorInterface.h>
+#include <cstdint>
+#include <cstdio>
+#include <map>
+#include <memory>
+#include <string>
+
+#include <fastdds/dds/core/policy/QosPolicies.hpp>
+#include <fastdds/dds/domain/qos/DomainParticipantFactoryQos.hpp>
+#include <fastdds/rtps/attributes/ThreadSettings.hpp>
+#include <fastdds/rtps/transport/PortBasedTransportDescriptor.hpp>
+#include <fastdds/rtps/transport/SocketTransportDescriptor.h>
+#include <fastrtps/attributes/LibrarySettingsAttributes.h>
 #include <fastrtps/attributes/ParticipantAttributes.h>
 #include <fastrtps/attributes/PublisherAttributes.h>
-#include <fastrtps/attributes/SubscriberAttributes.h>
-#include <fastrtps/attributes/RequesterAttributes.hpp>
 #include <fastrtps/attributes/ReplierAttributes.hpp>
-#include <fastrtps/xmlparser/XMLParserCommon.h>
+#include <fastrtps/attributes/RequesterAttributes.hpp>
+#include <fastrtps/attributes/SubscriberAttributes.h>
+#include <fastrtps/transport/TransportDescriptorInterface.h>
 #include <fastrtps/types/DynamicTypeBuilderPtr.h>
-#include <fastrtps/attributes/LibrarySettingsAttributes.h>
-
-#include <map>
-#include <string>
+#include <fastrtps/xmlparser/XMLParserCommon.h>
 
 namespace tinyxml2 {
 class XMLElement;
@@ -51,6 +58,11 @@ typedef std::shared_ptr<fastdds::rtps::TransportDescriptorInterface> sp_transpor
 typedef std::map<std::string, sp_transport_t>  sp_transport_map_t;
 typedef types::DynamicTypeBuilder*             p_dynamictypebuilder_t;
 typedef std::map<std::string, p_dynamictypebuilder_t> p_dynamictype_map_t;
+
+typedef std::unique_ptr<fastdds::dds::DomainParticipantFactoryQos> up_participantfactory_t;
+typedef DataNode<fastdds::dds::DomainParticipantFactoryQos>        node_participantfactory_t;
+typedef node_participantfactory_t*                                 p_node_participantfactory_t;
+typedef std::unique_ptr<node_participantfactory_t>                 up_node_participantfactory_t;
 
 typedef std::unique_ptr<ParticipantAttributes> up_participant_t;
 typedef DataNode<ParticipantAttributes>        node_participant_t;
@@ -91,6 +103,8 @@ class XMLParser
 
 public:
 
+    using FlowControllerDescriptorList = std::vector<std::shared_ptr<fastdds::rtps::FlowControllerDescriptor>>;
+
     /**
      * Load the default XML file.
      * @return XMLP_ret::XML_OK on success, XMLP_ret::XML_ERROR in other case.
@@ -107,6 +121,18 @@ public:
     RTPS_DllAPI static XMLP_ret loadXML(
             const std::string& filename,
             up_base_node_t& root);
+
+    /**
+     * Load a XML file.
+     * @param filename Name for the file to be loaded.
+     * @param root Root node.
+     * @param is_default Is the default XML file.
+     * @return XMLP_ret::XML_OK on success, XMLP_ret::XML_ERROR in other case.
+     */
+    static XMLP_ret loadXML(
+            const std::string& filename,
+            up_base_node_t& root,
+            bool is_default);
 
     /**
      * Load a XML data from buffer.
@@ -148,6 +174,14 @@ public:
     RTPS_DllAPI static XMLP_ret loadXMLDynamicTypes(
             tinyxml2::XMLElement& types);
 
+
+    /**
+     * Clears the private static collections.
+     *
+     * @return XMLP_ret::XML_OK on success, XMLP_ret::XML_ERROR in other case.
+     */
+    RTPS_DllAPI static XMLP_ret clear();
+
 protected:
 
     RTPS_DllAPI static XMLP_ret parseXML(
@@ -177,6 +211,10 @@ protected:
     RTPS_DllAPI static XMLP_ret parseXMLTransportsProf(
             tinyxml2::XMLElement* p_root);
 
+    RTPS_DllAPI static XMLP_ret parseXMLDomainParticipantFactoryProf(
+            tinyxml2::XMLElement* p_root,
+            BaseNode& rootNode);
+
     RTPS_DllAPI static XMLP_ret parseXMLParticipantProf(
             tinyxml2::XMLElement* p_root,
             BaseNode& rootNode);
@@ -204,9 +242,32 @@ protected:
     RTPS_DllAPI static XMLP_ret parseXMLTransportData(
             tinyxml2::XMLElement* p_root);
 
+    RTPS_DllAPI static XMLP_ret validateXMLTransportElements(
+            tinyxml2::XMLElement& p_root);
+
     RTPS_DllAPI static XMLP_ret parseXMLCommonTransportData(
             tinyxml2::XMLElement* p_root,
             sp_transport_t p_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLPortBasedTransportData(
+            tinyxml2::XMLElement* p_root,
+            std::shared_ptr<fastdds::rtps::PortBasedTransportDescriptor> p_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLSocketTransportData(
+            tinyxml2::XMLElement* p_root,
+            std::shared_ptr<fastdds::rtps::SocketTransportDescriptor> p_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLInterfaces(
+            tinyxml2::XMLElement* p_root,
+            std::shared_ptr<fastdds::rtps::SocketTransportDescriptor> p_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLAllowlist(
+            tinyxml2::XMLElement* p_root,
+            std::shared_ptr<fastdds::rtps::SocketTransportDescriptor> p_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLBlocklist(
+            tinyxml2::XMLElement* p_root,
+            std::shared_ptr<fastdds::rtps::SocketTransportDescriptor> p_transport);
 
     RTPS_DllAPI static XMLP_ret parseXMLCommonTCPTransportData(
             tinyxml2::XMLElement* p_root,
@@ -219,6 +280,10 @@ protected:
     RTPS_DllAPI static XMLP_ret parse_tls_config(
             tinyxml2::XMLElement* p_root,
             sp_transport_t tcp_transport);
+
+    RTPS_DllAPI static XMLP_ret parseXMLReceptionThreads(
+            tinyxml2::XMLElement& p_root,
+            fastdds::rtps::PortBasedTransportDescriptor::ReceptionThreadsConfigMap& reception_threads);
 
     /**
      * Load a XML consumer node and parses it. Adds the parsed consumer to Log directly.
@@ -279,6 +344,10 @@ protected:
             p_dynamictypebuilder_t p_dynamictype,
             types::MemberId mId,
             const std::string& values);
+
+    RTPS_DllAPI static XMLP_ret fillDataNode(
+            tinyxml2::XMLElement* p_profile,
+            DataNode<fastdds::dds::DomainParticipantFactoryQos>& factory_node);
 
     RTPS_DllAPI static XMLP_ret fillDataNode(
             tinyxml2::XMLElement* p_profile,
@@ -489,6 +558,11 @@ protected:
             rtps::ThroughputControllerDescriptor& throughputController,
             uint8_t ident);
 
+    RTPS_DllAPI static XMLP_ret getXMLFlowControllerDescriptorList(
+            tinyxml2::XMLElement* elem,
+            FlowControllerDescriptorList& flow_controller_descriptor_list,
+            uint8_t ident);
+
     RTPS_DllAPI static XMLP_ret getXMLPortParameters(
             tinyxml2::XMLElement* elem,
             rtps::PortParameters& port,
@@ -549,6 +623,11 @@ protected:
             uint16_t* ui16,
             uint8_t ident);
 
+    RTPS_DllAPI static XMLP_ret getXMLUint(
+            tinyxml2::XMLElement* elem,
+            uint64_t* ui64,
+            uint8_t ident);
+
     RTPS_DllAPI static XMLP_ret getXMLBool(
             tinyxml2::XMLElement* elem,
             bool* b,
@@ -599,6 +678,10 @@ protected:
             rtps::GuidPrefix_t& prefix,
             uint8_t ident);
 
+    RTPS_DllAPI static XMLP_ret getXMLDomainParticipantFactoryQos(
+            tinyxml2::XMLElement& elem,
+            fastdds::dds::DomainParticipantFactoryQos& qos);
+
     RTPS_DllAPI static XMLP_ret getXMLPublisherAttributes(
             tinyxml2::XMLElement* elem,
             PublisherAttributes& publisher,
@@ -608,6 +691,34 @@ protected:
             tinyxml2::XMLElement* elem,
             SubscriberAttributes& subscriber,
             uint8_t ident);
+
+    RTPS_DllAPI static XMLP_ret getXMLThreadSettings(
+            tinyxml2::XMLElement& elem,
+            fastdds::rtps::ThreadSettings& thread_setting);
+
+    /*
+        Return XMLP_ret::XML_OK when OK, XMLP_ret::XML_NOK when port attribute is not present, and
+        XMLP_ret::XML_ERROR if error
+     */
+    RTPS_DllAPI static XMLP_ret getXMLThreadSettingsWithPort(
+            tinyxml2::XMLElement& elem,
+            fastdds::rtps::ThreadSettings& thread_setting,
+            uint32_t& port);
+
+    RTPS_DllAPI static XMLP_ret getXMLEntityFactoryQos(
+            tinyxml2::XMLElement& elem,
+            fastdds::dds::EntityFactoryQosPolicy& entity_factory);
+
+    RTPS_DllAPI static XMLP_ret getXMLBuiltinTransports(
+            tinyxml2::XMLElement* elem,
+            eprosima::fastdds::rtps::BuiltinTransports* bt,
+            eprosima::fastdds::rtps::BuiltinTransportsOptions* bt_opts,
+            uint8_t ident);
+
+private:
+
+    static std::mutex collections_mtx_;
+    static std::set<std::string> flow_controller_descriptor_names_;
 };
 
 } // namespace xmlparser

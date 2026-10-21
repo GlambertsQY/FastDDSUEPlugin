@@ -22,11 +22,12 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS_PUBLIC
 
+#include <map>
+#include <mutex>
+
+#include <fastdds/rtps/common/VendorId_t.hpp>
 #include <fastdds/rtps/reader/RTPSReader.h>
 #include <fastrtps/utils/collections/ResourceLimitedVector.hpp>
-
-#include <mutex>
-#include <map>
 
 namespace eprosima {
 namespace fastrtps {
@@ -109,10 +110,12 @@ public:
             WriterProxy* prox = nullptr) override;
 
     /**
-     * Processes a new DATA message.
+     * @brief Process an incoming DATA message.
      *
-     * @param change Pointer to the CacheChange_t.
-     * @return true if the reader accepts messages from the.
+     * @param change  Pointer to the incoming CacheChange_t.
+     *
+     * @return true if the reader processed the message.
+     * @return false if the reader could not process the message, but would be able to do so in the future.
      */
     bool processDataMsg(
             CacheChange_t* change) override;
@@ -143,12 +146,14 @@ public:
             const SequenceNumber_t& firstSN,
             const SequenceNumber_t& lastSN,
             bool finalFlag,
-            bool livelinessFlag) override;
+            bool livelinessFlag,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) override;
 
     bool processGapMsg(
             const GUID_t& writerGUID,
             const SequenceNumber_t& gapStart,
-            const SequenceNumberSet_t& gapList) override;
+            const SequenceNumberSet_t& gapList,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) override;
 
     /**
      * This method is called when a new change is received. This method calls the received_change of the History
@@ -230,25 +235,34 @@ public:
 
     /**
      * Called after the change has been deserialized.
-     * @param [in] change        Pointer to the change being accessed.
-     * @param [in] wp            Writer proxy the @c change belongs to.
-     * @param [in] mark_as_read  Whether the @c change should be marked as read or not.
+     * @param [in] change          Pointer to the change being accessed.
+     * @param [in] wp              Writer proxy the @c change belongs to.
+     * @param [in] mark_as_read    Whether the @c change should be marked as read or not.
+     * @param [in] should_send_ack Whether an ACKNACK should be sent to the writer or not.
      */
     void end_sample_access_nts(
             CacheChange_t* change,
             WriterProxy*& wp,
-            bool mark_as_read) override;
+            bool mark_as_read,
+            bool should_send_ack = false) override;
 
     /**
      * Called when the user has retrieved a change from the history.
      * @param change Pointer to the change to ACK
      * @param writer Writer proxy of the \c change.
      * @param mark_as_read Whether the \c change should be marked as read or not
+     * @param should_send_ack Whether an ACKNACK should be sent to the writer or not.
      */
     void change_read_by_user(
             CacheChange_t* change,
             WriterProxy* writer,
-            bool mark_as_read = true) override;
+            bool mark_as_read = true,
+            bool should_send_ack = false) override;
+
+#ifdef FASTDDS_STATISTICS
+    bool get_connections(
+            fastdds::statistics::rtps::ConnectionList& connection_list) override;
+#endif // ifdef FASTDDS_STATISTICS
 
 private:
 

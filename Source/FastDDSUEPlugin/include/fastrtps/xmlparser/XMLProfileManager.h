@@ -15,23 +15,26 @@
 #ifndef XML_PROFILE_MANAGER_H_
 #define XML_PROFILE_MANAGER_H_
 
+#include <cstdio>
+#include <map>
+#include <string>
+
+#include <fastdds/dds/domain/qos/DomainParticipantFactoryQos.hpp>
 #include <fastrtps/attributes/ParticipantAttributes.h>
 #include <fastrtps/attributes/PublisherAttributes.h>
 #include <fastrtps/attributes/SubscriberAttributes.h>
-#include <fastrtps/xmlparser/XMLParserCommon.h>
-#include <fastrtps/xmlparser/XMLParser.h>
-#include <fastrtps/types/DynamicTypeBuilderFactory.h>
-#include <fastrtps/types/DynamicTypeBuilder.h>
 #include <fastrtps/types/DynamicPubSubType.h>
-
-#include <stdio.h>
-#include <string>
-#include <map>
+#include <fastrtps/types/DynamicTypeBuilder.h>
+#include <fastrtps/types/DynamicTypeBuilderFactory.h>
+#include <fastrtps/xmlparser/XMLParser.h>
+#include <fastrtps/xmlparser/XMLParserCommon.h>
 
 namespace eprosima {
 namespace fastrtps {
 namespace xmlparser {
 
+using participant_factory_map_t = std::map<std::string, up_participantfactory_t>;
+using part_factory_map_iterator_t = participant_factory_map_t::iterator;
 using participant_map_t = std::map<std::string, up_participant_t>;
 using part_map_iterator_t = participant_map_t::iterator;
 using publisher_map_t = std::map<std::string, up_publisher_t>;
@@ -49,7 +52,7 @@ using xmlfile_map_iterator_t = xmlfiles_map_t::iterator;
 
 /**
  * Class XMLProfileManager, used to make available profiles from XML file.
- * @ingroup XMLPROFILEMANAGER_MODULE
+ * @ingroup XMLPARSER_MODULE
  */
 class XMLProfileManager
 {
@@ -68,6 +71,18 @@ public:
      */
     RTPS_DllAPI static XMLP_ret loadXMLFile(
             const std::string& filename);
+
+    /**
+     * Load a profiles XML file.
+     * @param filename Name for the file to be loaded.
+     * @param is_default Flag to indicate if the file is a default profiles file.
+     * @return XMLP_ret::XML_OK if all profiles are correct, XMLP_ret::XML_NOK if some are and some are not,
+     *         XMLP_ret::XML_ERROR in other case.
+     */
+
+    static XMLP_ret loadXMLFile(
+            const std::string& filename,
+            bool is_default);
 
     /**
      * Load a profiles XML string.
@@ -134,6 +149,25 @@ public:
     //!Fills participant_attributes with the default values.
     RTPS_DllAPI static void getDefaultParticipantAttributes(
             ParticipantAttributes& participant_attributes);
+
+    /**
+     * Search for the profile specified and fill the structure.
+     * @param profile_name Name for the profile to be used to fill the structure.
+     * @param qos Structure to be filled.
+     * @param log_error Flag to log an error if the profile_name is not found. Defaults true.
+     * @return XMLP_ret::XML_OK on success, XMLP_ret::XML_ERROR in other case.
+     */
+    RTPS_DllAPI static XMLP_ret fillDomainParticipantFactoryQos(
+            const std::string& profile_name,
+            fastdds::dds::DomainParticipantFactoryQos& qos,
+            bool log_error = true);
+
+    /**
+     * Fills input domain participant factory qos with the default values.
+     * @param qos Structure to be filled.
+     */
+    RTPS_DllAPI static void getDefaultDomainParticipantFactoryQos(
+            fastdds::dds::DomainParticipantFactoryQos& qos);
 
     /**
      * Search for the profile specified and fill the structure.
@@ -225,17 +259,7 @@ public:
      * FastDDS's Domain calls this method automatically on its destructor, but
      * if using XMLProfileManager outside of FastDDS, it should be called manually.
      */
-    RTPS_DllAPI static void DeleteInstance()
-    {
-        participant_profiles_.clear();
-        publisher_profiles_.clear();
-        subscriber_profiles_.clear();
-        requester_profiles_.clear();
-        replier_profiles_.clear();
-        topic_profiles_.clear();
-        xml_files_.clear();
-        transport_profiles_.clear();
-    }
+    RTPS_DllAPI static void DeleteInstance();
 
     /**
      * Retrieves a DynamicPubSubType for the given dynamic type name.
@@ -243,29 +267,23 @@ public:
      * XMLProfileManager::DeleteDynamicPubSubType method.
      */
     RTPS_DllAPI static types::DynamicPubSubType* CreateDynamicPubSubType(
-            const std::string& type_name)
-    {
-        if (dynamic_types_.find(type_name) != dynamic_types_.end())
-        {
-            return new types::DynamicPubSubType(dynamic_types_[type_name]->build());
-        }
-        return nullptr;
-    }
+            const std::string& type_name);
 
     /**
      * Deletes the given DynamicPubSubType previously created by calling
      * XMLProfileManager::CreateDynamicPubSubType method.
      */
     RTPS_DllAPI static void DeleteDynamicPubSubType(
-            types::DynamicPubSubType* type)
-    {
-        delete type;
-    }
+            types::DynamicPubSubType* type);
 
 private:
 
     RTPS_DllAPI static XMLP_ret extractProfiles(
             up_base_node_t properties,
+            const std::string& filename);
+
+    RTPS_DllAPI static XMLP_ret extractDomainParticipantFactoryProfile(
+            up_base_node_t& profile,
             const std::string& filename);
 
     RTPS_DllAPI static XMLP_ret extractParticipantProfile(
@@ -295,6 +313,8 @@ private:
     static BaseNode* root;
 
     static LibrarySettingsAttributes library_settings_;
+
+    static participant_factory_map_t participant_factory_profiles_;
 
     static participant_map_t participant_profiles_;
 

@@ -673,6 +673,7 @@ public:
      *
      * @param[out] participant_handles Reference to the vector where discovered participants will be returned
      * @return RETCODE_OK if everything correct, error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t get_discovered_participants(
@@ -684,6 +685,7 @@ public:
      * @param[out] participant_data Reference to the ParticipantBuiltinTopicData object to return the data
      * @param participant_handle InstanceHandle of DomainParticipant to retrieve the data from
      * @return RETCODE_OK if everything correct, PRECONDITION_NOT_MET if participant does not exist
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t get_discovered_participant_data(
@@ -695,6 +697,7 @@ public:
      *
      * @param[out] topic_handles Reference to the vector where discovered topics will be returned
      * @return RETCODE_OK if everything correct, error code otherwise
+     *
      * @warning Not supported yet. Currently returns RETCODE_UNSUPPORTED
      */
     RTPS_DllAPI ReturnCode_t get_discovered_topics(
@@ -850,19 +853,21 @@ public:
             const fastrtps::types::TypeIdentifierSeq& in) const;
 
     /**
-     * Helps the user to solve all dependencies calling internally to the typelookup service
-     * and registers the resulting dynamic type.
-     * The registration will be perform asynchronously and the user will be notified through the
-     * given callback, which receives the type_name as unique argument.
-     * If the type is already registered, the function will return true, but the callback will not be called.
-     * If the given type_information is enough to build the type without using the typelookup service,
-     * it will return true and the callback will be never called.
+     * Helps the user to solve all dependencies calling internally to the type lookup service and
+     * registers the resulting dynamic type.
+     * The registration may be perform asynchronously, case in which the user will be notified
+     * through the given callback, which receives the type_name as unique argument.
      *
      * @param type_information
      * @param type_name
      * @param callback
-     * @return true if type is already available (callback will not be called). false if type isn't available yet
-     * (the callback will be called if negotiation is success, and ignored in other case).
+     * @return RETCODE_OK If the given type_information is enough to build the type without using
+     *         the typelookup service (callback will not be called).
+     * @return RETCODE_OK if the given type is already available (callback will not be called).
+     * @return RETCODE_NO_DATA if type is not available yet (the callback will be called if
+     *         negotiation is success, and ignored in other case).
+     * @return RETCODE_NOT_ENABLED if the DomainParticipant is not enabled.
+     * @return RETCODE_PRECONDITION_NOT_MET if the DomainParticipant type lookup service is disabled.
      */
     RTPS_DllAPI ReturnCode_t register_remote_type(
             const fastrtps::types::TypeInformation& type_information,

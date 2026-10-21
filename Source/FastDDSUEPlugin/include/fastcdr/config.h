@@ -15,31 +15,37 @@
 #ifndef _FASTCDR_CONFIG_H_
 #define _FASTCDR_CONFIG_H_
 
-#define FASTCDR_VERSION_MAJOR 1
-#define FASTCDR_VERSION_MINOR 1
-#define FASTCDR_VERSION_MICRO 0
-#define FASTCDR_VERSION_STR "1.1.0"
+#define FASTCDR_VERSION_MAJOR 2
+#define FASTCDR_VERSION_MINOR 2
+#define FASTCDR_VERSION_MICRO 8
+#define FASTCDR_VERSION_STR "2.2.8"
 
 // C++11 support defines
 #ifndef HAVE_CXX11
 #define HAVE_CXX11 1
-#endif
+#endif // ifndef HAVE_CXX11
 
 // Endianness defines
 #ifndef FASTCDR_IS_BIG_ENDIAN_TARGET
 #define FASTCDR_IS_BIG_ENDIAN_TARGET 0
-#endif
+#endif // ifndef FASTCDR_IS_BIG_ENDIAN_TARGET
 
 #ifndef FASTCDR_HAVE_FLOAT128
 #define FASTCDR_HAVE_FLOAT128 0
-#endif
+#endif // ifndef FASTCDR_HAVE_FLOAT128
 
 #ifndef FASTCDR_SIZEOF_LONG_DOUBLE
 #define FASTCDR_SIZEOF_LONG_DOUBLE 8
-#endif
+#endif // ifndef FASTCDR_SIZEOF_LONG_DOUBLE
 
 #if defined(__ARM_ARCH) && __ARM_ARCH <= 7
 #define FASTCDR_ARM32
-#endif
+#endif // if defined(__ARM_ARCH) && __ARM_ARCH <= 7
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define TEMPLATE_SPEC
+#else
+#define TEMPLATE_SPEC template<>
+#endif // if defined(__GNUC__) && !defined(__clang__)
 
 #endif // _FASTCDR_CONFIG_H_

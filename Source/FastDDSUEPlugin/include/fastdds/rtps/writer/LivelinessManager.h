@@ -82,15 +82,17 @@ public:
 
     /**
      * @brief Removes a writer
-     * @param guid GUID of the writer
-     * @param kind Liveliness kind
-     * @param lease_duration Liveliness lease duration
+     * @param [in] guid GUID of the writer
+     * @param [in] kind Liveliness kind
+     * @param [in] lease_duration Liveliness lease duration
+     * @param [out] writer_liveliness_status The liveliness status of the writer
      * @return True if the writer was successfully removed
      */
     bool remove_writer(
             GUID_t guid,
-            LivelinessQosPolicyKind kind,
-            Duration_t lease_duration);
+            fastdds::dds::LivelinessQosPolicyKind kind,
+            Duration_t lease_duration,
+            LivelinessData::WriterStatus& writer_liveliness_status);
 
     /**
      * @brief Asserts liveliness of a writer in the set
@@ -105,12 +107,14 @@ public:
             Duration_t lease_duration);
 
     /**
-     * @brief Asserts liveliness of writers with given liveliness kind
+     * @brief Asserts liveliness of writers with given liveliness kind and GuidPrefix
      * @param kind Liveliness kind
+     * @param guid_prefix The guid prefix of the writers to assert liveliness of
      * @return True if liveliness was successfully asserted
      */
     bool assert_liveliness(
-            LivelinessQosPolicyKind kind);
+            LivelinessQosPolicyKind kind,
+            GuidPrefix_t guid_prefix);
 
     /**
      * @brief A method to check any writer of the given kind is alive

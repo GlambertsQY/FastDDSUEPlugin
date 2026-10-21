@@ -21,12 +21,13 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS_PUBLIC
 
+#include <mutex>
+
+#include <fastdds/rtps/common/CDRMessage_t.h>
+#include <fastdds/rtps/common/VendorId_t.hpp>
+#include <fastdds/rtps/messages/RTPSMessageGroup.h>
 #include <fastdds/rtps/reader/RTPSReader.h>
 #include <fastrtps/utils/collections/ResourceLimitedVector.hpp>
-#include <fastdds/rtps/common/CDRMessage_t.h>
-#include <fastdds/rtps/messages/RTPSMessageGroup.h>
-
-#include <mutex>
 
 namespace eprosima {
 namespace fastrtps {
@@ -46,6 +47,8 @@ public:
     friend class RTPSParticipantImpl;
 
     virtual ~StatefulReader();
+
+    using RTPSReader::reserve_cache;
 
 protected:
 
@@ -112,9 +115,12 @@ public:
             WriterProxy** WP);
 
     /**
-     * Processes a new DATA message.
-     * @param change Pointer to the CacheChange_t.
-     * @return true if the reader accepts messages.
+     * @brief Process an incoming DATA message.
+     *
+     * @param change  Pointer to the incoming CacheChange_t.
+     *
+     * @return true if the reader processed the message.
+     * @return false if the reader could not process the message, but would be able to do so in the future.
      */
     bool processDataMsg(
             CacheChange_t* change) override;
@@ -145,12 +151,14 @@ public:
             const SequenceNumber_t& firstSN,
             const SequenceNumber_t& lastSN,
             bool finalFlag,
-            bool livelinessFlag) override;
+            bool livelinessFlag,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) override;
 
     bool processGapMsg(
             const GUID_t& writerGUID,
             const SequenceNumber_t& gapStart,
-            const SequenceNumberSet_t& gapList) override;
+            const SequenceNumberSet_t& gapList,
+            fastdds::rtps::VendorId_t origin_vendor_id = c_VendorId_Unknown) override;
 
     /**
      * Method to indicate the reader that some change has been removed due to HistoryQos requirements.
@@ -165,16 +173,19 @@ public:
     /**
      * This method is called when a new change is received. This method calls the received_change of the History
      * and depending on the implementation performs different actions.
-     * @param a_change Pointer of the change to add.
-     * @param prox Pointer to the WriterProxy that adds the Change.
-     * @param unknown_missing_changes_up_to The number of changes from the same writer with a lower sequence number that
-     *                                      could potentially be received in the future.
-     * @return True if added.
+     * @param [in] a_change                      Pointer of the change to add.
+     * @param [in] prox                          Pointer to the WriterProxy that adds the Change.
+     * @param [in] unknown_missing_changes_up_to The number of changes from the same writer with a lower sequence
+     *                                           number that could potentially be received in the future.
+     * @param [out] will_never_be_accepted       A boolean indicating whether the change could be accepted in the
+     *                                           future or not. This is only relevant when the method returns false.
+     * @return True if added, false otherwise.
      */
     bool change_received(
             CacheChange_t* a_change,
             WriterProxy* prox,
-            size_t unknown_missing_changes_up_to);
+            size_t unknown_missing_changes_up_to,
+            bool& will_never_be_accepted);
 
     /**
      * Get the RTPS participant
@@ -305,25 +316,34 @@ public:
 
     /**
      * Called after the change has been deserialized.
-     * @param [in] change        Pointer to the change being accessed.
-     * @param [in] wp            Writer proxy the @c change belongs to.
-     * @param [in] mark_as_read  Whether the @c change should be marked as read or not.
+     * @param [in] change          Pointer to the change being accessed.
+     * @param [in] wp              Writer proxy the @c change belongs to.
+     * @param [in] mark_as_read    Whether the @c change should be marked as read or not.
+     * @param [in] should_send_ack Whether an ACKNACK should be sent to the writer or not.
      */
     void end_sample_access_nts(
             CacheChange_t* change,
             WriterProxy*& wp,
-            bool mark_as_read) override;
+            bool mark_as_read,
+            bool should_send_ack = false) override;
 
     /**
      * Called when the user has retrieved a change from the history.
      * @param change Pointer to the change to ACK
      * @param writer Writer proxy of the \c change.
      * @param mark_as_read Whether the \c change should be marked as read or not
+     * @param should_send_ack Whether an ACKNACK should be sent to the writer or not.
      */
     void change_read_by_user(
             CacheChange_t* change,
             WriterProxy* writer,
-            bool mark_as_read = true) override;
+            bool mark_as_read = true,
+            bool should_send_ack = false) override;
+
+#ifdef FASTDDS_STATISTICS
+    bool get_connections(
+            fastdds::statistics::rtps::ConnectionList& connection_list) override;
+#endif // ifdef FASTDDS_STATISTICS
 
 private:
 

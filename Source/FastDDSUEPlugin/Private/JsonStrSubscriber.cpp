@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JsonStrSubscriber.h"
@@ -11,6 +11,51 @@
 #include "SubListener.h"
 
 using namespace eprosima::fastdds::dds;
+
+JsonStrSubscriber::JsonStrSubscriber()
+	: participant_(nullptr)
+	  , subscriber_(nullptr)
+	  , topic_(nullptr)
+	  , reader_(nullptr)
+	  , type_(new JsonStrBeanPubSubType())
+{
+	_listener = nullptr;
+	ParticipantName = TEXT("Participant_Sub");
+	TopicName = TEXT("myTopic");
+}
+
+JsonStrSubscriber::~JsonStrSubscriber()
+{
+	if (_listener != nullptr)
+	{
+		_listener->isAvailable = false;
+	}
+	Reset();
+}
+
+void JsonStrSubscriber::Reset()
+{
+	if (participant_ != nullptr)
+	{
+		if (subscriber_ != nullptr)
+		{
+			if (reader_ != nullptr)
+			{
+				subscriber_->delete_datareader(reader_);
+				reader_ = nullptr;
+			}
+			participant_->delete_subscriber(subscriber_);
+			subscriber_ = nullptr;
+		}
+		if (topic_ != nullptr)
+		{
+			participant_->delete_topic(topic_);
+			topic_ = nullptr;
+		}
+		DomainParticipantFactory::get_instance()->delete_participant(participant_);
+		participant_ = nullptr;
+	}
+}
 
 bool JsonStrSubscriber::init()
 {
@@ -29,6 +74,7 @@ bool JsonStrSubscriber::init()
 	subscriber_ = participant_->create_subscriber(SUBSCRIBER_QOS_DEFAULT, nullptr);
 	if (subscriber_ == nullptr)
 	{
+		Reset();
 		return false;
 	}
 
@@ -39,6 +85,7 @@ bool JsonStrSubscriber::init()
 		TOPIC_QOS_DEFAULT);
 	if (topic_ == nullptr)
 	{
+		Reset();
 		return false;
 	}
 
@@ -48,40 +95,11 @@ bool JsonStrSubscriber::init()
 	reader_ = subscriber_->create_datareader(topic_, rqos, _listener);
 	if (reader_ == nullptr)
 	{
+		Reset();
 		return false;
 	}
 
 	return true;
-}
-
-JsonStrSubscriber::JsonStrSubscriber()
-	: participant_(nullptr)
-	  , subscriber_(nullptr)
-	  , topic_(nullptr)
-	  , reader_(nullptr)
-	  , type_(new JsonStrBeanPubSubType())
-{
-	_listener = nullptr;
-	ParticipantName = TEXT("Participant_Pub");
-	TopicName = TEXT("myTopic");
-}
-
-JsonStrSubscriber::~JsonStrSubscriber()
-{
-	if (reader_ != nullptr)
-	{
-		_listener->isAvailable = false;
-		subscriber_->delete_datareader(reader_);
-	}
-	if (topic_ != nullptr)
-	{
-		participant_->delete_topic(topic_);
-	}
-	if (subscriber_ != nullptr)
-	{
-		participant_->delete_subscriber(subscriber_);
-	}
-	DomainParticipantFactory::get_instance()->delete_participant(participant_);
 }
 
 void JsonStrSubscriber::setParams(int32 DId, FString PName, FString TName, SubListener* SubListener)

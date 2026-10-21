@@ -15,7 +15,12 @@
 #ifndef _FASTDDS_SHAREDMEM_TRANSPORT_DESCRIPTOR_
 #define _FASTDDS_SHAREDMEM_TRANSPORT_DESCRIPTOR_
 
-#include "fastdds/rtps/transport/TransportDescriptorInterface.h"
+#include <cstdint>
+#include <string>
+
+#include <fastdds/rtps/attributes/ThreadSettings.hpp>
+#include <fastdds/rtps/transport/PortBasedTransportDescriptor.hpp>
+#include <fastrtps/fastrtps_dll.h>
 
 namespace eprosima {
 namespace fastdds {
@@ -37,8 +42,12 @@ class TransportInterface;
  *
  * @ingroup TRANSPORT_MODULE
  */
-struct SharedMemTransportDescriptor : public TransportDescriptorInterface
+struct SharedMemTransportDescriptor : public PortBasedTransportDescriptor
 {
+    static constexpr uint32_t shm_default_segment_size = 0;
+    static constexpr uint32_t shm_default_port_queue_capacity = 512;
+    static constexpr uint32_t shm_default_healthy_check_timeout_ms = 1000;
+
     //! Destructor
     virtual ~SharedMemTransportDescriptor() = default;
 
@@ -126,16 +135,32 @@ struct SharedMemTransportDescriptor : public TransportDescriptorInterface
         rtps_dump_file_ = rtps_dump_file;
     }
 
+    //! Return the thread settings for the transport dump thread
+    RTPS_DllAPI ThreadSettings dump_thread() const
+    {
+        return dump_thread_;
+    }
+
+    //! Set the thread settings for the transport dump thread
+    RTPS_DllAPI void dump_thread(
+            const ThreadSettings& dump_thread)
+    {
+        dump_thread_ = dump_thread;
+    }
+
     //! Comparison operator
     RTPS_DllAPI bool operator ==(
             const SharedMemTransportDescriptor& t) const;
 
 private:
 
-    uint32_t segment_size_;
-    uint32_t port_queue_capacity_;
-    uint32_t healthy_check_timeout_ms_;
-    std::string rtps_dump_file_;
+    uint32_t segment_size_ = shm_default_segment_size;
+    uint32_t port_queue_capacity_ = shm_default_port_queue_capacity;
+    uint32_t healthy_check_timeout_ms_ = shm_default_healthy_check_timeout_ms;
+    std::string rtps_dump_file_ {""};
+
+    //! Thread settings for the transport dump thread
+    ThreadSettings dump_thread_ {};
 
 };
 

@@ -76,6 +76,12 @@ protected:
             WriterHistory* hist,
             WriterListener* listen = nullptr);
 
+    mutable LocatorList_t fixed_locators_;
+
+    virtual bool send_to_fixed_locators(
+            CDRMessage_t* message,
+            std::chrono::steady_clock::time_point& max_blocking_time_point) const;
+
 public:
 
     virtual ~StatelessWriter();
@@ -83,7 +89,7 @@ public:
     /**
      * Add a specific change to all ReaderLocators.
      * @param change Pointer to the change.
-     * @param max_blocking_time
+     * @param[in] max_blocking_time Maximum time this method has to complete the task.
      */
     void unsent_change_added_to_history(
             CacheChange_t* change,
@@ -92,10 +98,12 @@ public:
     /**
      * Indicate the writer that a change has been removed by the history due to some HistoryQos requirement.
      * @param change Pointer to the change that is going to be removed.
+     * @param[in] max_blocking_time Maximum time this method has to complete the task.
      * @return True if removed correctly.
      */
     bool change_removed_by_history(
-            CacheChange_t* change) override;
+            CacheChange_t* change,
+            const std::chrono::time_point<std::chrono::steady_clock>& max_blocking_time) override;
 
     /**
      * Add a matched reader.
@@ -157,10 +165,11 @@ public:
         //FOR NOW THERE IS NOTHING TO UPDATE.
     }
 
+    //! Deprecated in favor of PDP simple writer
     bool set_fixed_locators(
             const LocatorList_t& locator_list);
 
-    //!Reset the unsent changes.
+    //! Deprecated in favor of PDP simple writer
     void unsent_changes_reset();
 
     /**
@@ -239,6 +248,11 @@ public:
         return locator_selector_;
     }
 
+#ifdef FASTDDS_STATISTICS
+    bool get_connections(
+            fastdds::statistics::rtps::ConnectionList& connection_list) override;
+#endif // ifdef FASTDDS_STATISTICS
+
 private:
 
     void init(
@@ -265,7 +279,6 @@ private:
 
 
     bool is_inline_qos_expected_ = false;
-    LocatorList_t fixed_locators_;
     ResourceLimitedVector<std::unique_ptr<ReaderLocator>> matched_remote_readers_;
 
     std::condition_variable_any unsent_changes_cond_;

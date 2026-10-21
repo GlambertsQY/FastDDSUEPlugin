@@ -16,11 +16,11 @@
 #define _FASTRTPS_CONFIG_H_
 
 #define FASTRTPS_VERSION_MAJOR 2
-#define FASTRTPS_VERSION_MINOR 11
-#define FASTRTPS_VERSION_MICRO 0
-#define FASTRTPS_VERSION_STR "2.11.0"
+#define FASTRTPS_VERSION_MINOR 14
+#define FASTRTPS_VERSION_MICRO 7
+#define FASTRTPS_VERSION_STR "2.14.7"
 
-#define GEN_API_VER 1
+#define GEN_API_VER 2
 
 // C++20 support defines
 #ifndef HAVE_CXX20
@@ -54,12 +54,12 @@
 
 // Security
 #ifndef HAVE_SECURITY
-#define HAVE_SECURITY 1
+#define HAVE_SECURITY 0
 #endif /* ifndef HAVE_SECURITY */
 
 //Sqlite3 support
 #ifndef HAVE_SQLITE3
-#define HAVE_SQLITE3 1
+#define HAVE_SQLITE3 0
 #endif /* ifndef HAVE_SQLITE3 */
 
 // Using thirdparty shared_mutex
@@ -67,7 +67,7 @@
 
 // TLS support
 #ifndef TLS_FOUND
-#define TLS_FOUND 1
+#define TLS_FOUND 0
 #endif /* ifndef TLS_FOUND */
 
 // Strict real-time
@@ -85,7 +85,7 @@
 // Log Info
 #ifndef FASTDDS_ENFORCE_LOG_INFO
 /* #undef FASTDDS_ENFORCE_LOG_INFO */
-#endif
+#endif // ifndef FASTDDS_ENFORCE_LOG_INFO
 #ifndef HAVE_LOG_NO_INFO
 #define HAVE_LOG_NO_INFO 0
 #endif /* ifndef HAVE_LOG_NO_INFO */
@@ -122,6 +122,21 @@
 #define FASTDDS_TODO_BEFORE(major, minor, msg)                                          \
     static_assert((FASTRTPS_VERSION_MAJOR < major) ||                                   \
             (FASTRTPS_VERSION_MAJOR == major && FASTRTPS_VERSION_MINOR < minor),  \
-            "TODO before version " #major "." #minor " : " #msg);
+            "TODO before version " #major "." #minor " : " #msg)
+
+#if FASTCDR_VERSION_MAJOR > 1
+#define FASTDDS_SER_METHOD_DEPRECATED(major, entity_name, msg) FASTDDS_DEPRECATED_UNTIL(major, entity_name, msg)
+#else
+#define FASTDDS_SER_METHOD_DEPRECATED(major, entity_name, msg)
+#endif // if FASTCDR_VERSION_MAJOR > 1
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#  define FASTDDS_UNREACHABLE() __assume(0)
+#elif defined(__GNUC__) || defined(__clang__)
+#  define FASTDDS_UNREACHABLE() __builtin_unreachable()
+#else
+#  include <cstdlib>
+#  define FASTDDS_UNREACHABLE() std::abort()
+#endif // if defined(_MSC_VER) && !defined(__clang__)
 
 #endif // _FASTRTPS_CONFIG_H_

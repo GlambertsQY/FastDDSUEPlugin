@@ -15,9 +15,14 @@
 #ifndef _FASTDDS_TCP_TRANSPORT_DESCRIPTOR_H_
 #define _FASTDDS_TCP_TRANSPORT_DESCRIPTOR_H_
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include <fastdds/rtps/attributes/ThreadSettings.hpp>
 #include <fastdds/rtps/transport/SocketTransportDescriptor.h>
 #include <fastrtps/fastrtps_dll.h>
-#include <iostream>
 
 namespace eprosima {
 namespace fastdds {
@@ -47,6 +52,12 @@ namespace rtps {
  * - \c apply_security: true to use TLS (Transport Layer Security).
  *
  * - \c tls_config: Configuration for TLS.
+ *
+ * - \c non_blocking_send: do not block on send operations. When it is set to true, send operations will return
+ *      immediately if the buffer might get full, but no error will be returned to the upper layer. This means
+ *      that the application will behave as if the datagram is sent and lost.
+ *
+ * - \c tcp_negotiation_timeout: time to wait for logical port negotiation (in ms).
  *
  * @ingroup TRANSPORT_MODULE
  */
@@ -246,13 +257,17 @@ struct TCPTransportDescriptor : public SocketTransportDescriptor
     //! Increment between logical ports to try during RTCP negotiation
     uint16_t logical_port_increment;
 
-    FASTDDS_TODO_BEFORE(3, 0, "Eliminate tcp_negotiation_timeout, variable not in use.")
+    /**
+     * Time to wait for logical port negotiation (ms). If a logical port is under negotiation, it waits for the
+     * negotiation to finish up to this timeout before trying to send a message to that port.
+     * Zero value means no waiting (default).
+     */
     uint32_t tcp_negotiation_timeout;
 
     //! Enables the TCP_NODELAY socket option
     bool enable_tcp_nodelay;
 
-    FASTDDS_TODO_BEFORE(3, 0, "Eliminate wait_for_tcp_negotiation, variable not in use.")
+    FASTDDS_TODO_BEFORE(3, 0, "Eliminate wait_for_tcp_negotiation, variable not in use.");
     bool wait_for_tcp_negotiation;
 
     //! Enables the calculation and sending of CRC on message headers
@@ -264,6 +279,26 @@ struct TCPTransportDescriptor : public SocketTransportDescriptor
 
     //! Configuration of the TLS (Transport Layer Security)
     TLSConfig tls_config;
+
+    //! Thread settings for keep alive thread
+    ThreadSettings keep_alive_thread;
+
+    //! Thread settings for the accept connections thread
+    ThreadSettings accept_thread;
+
+    /**
+     * Whether to use non-blocking calls to send().
+     *
+     * When set to true, calls to send() will return immediately if the send buffer might get full.
+     * This may happen when receive buffer on reader's side is full. No error will be returned
+     * to the upper layer. This means that the application will behave
+     * as if the datagram is sent but lost (i.e. throughput may be reduced). This value is
+     * specially useful on high-frequency writers.
+     *
+     * When set to false, which is the default, calls to send() will block until the send buffer has space for the
+     * datagram. This may cause application lock.
+     */
+    bool non_blocking_send;
 
     //! Add listener port to the listening_ports list
     void add_listener_port(

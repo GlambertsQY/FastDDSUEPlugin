@@ -21,17 +21,15 @@
 #define _FASTDDS_RTPS_BUILTIN_DATA_WRITERPROXYDATA_H_
 #ifndef DOXYGEN_SHOULD_SKIP_THIS_PUBLIC
 
-#include <fastrtps/qos/WriterQos.h>
-#include <fastrtps/attributes/TopicAttributes.h>
-
-#include <fastrtps/utils/fixed_size_string.hpp>
 #include <fastdds/rtps/attributes/RTPSParticipantAllocationAttributes.hpp>
-
+#include <fastdds/rtps/common/RemoteLocators.hpp>
+#include <fastdds/rtps/common/VendorId_t.hpp>
 #if HAVE_SECURITY
 #include <fastdds/rtps/security/accesscontrol/EndpointSecurityAttributes.h>
 #endif // if HAVE_SECURITY
-
-#include <fastdds/rtps/common/RemoteLocators.hpp>
+#include <fastrtps/attributes/TopicAttributes.h>
+#include <fastrtps/qos/WriterQos.h>
+#include <fastrtps/utils/fixed_size_string.hpp>
 
 namespace eprosima {
 namespace fastrtps {
@@ -85,6 +83,28 @@ public:
     RTPS_DllAPI GUID_t& guid()
     {
         return m_guid;
+    }
+
+    RTPS_DllAPI void networkConfiguration(
+            const NetworkConfigSet_t& networkConfiguration)
+    {
+        m_networkConfiguration = networkConfiguration;
+    }
+
+    RTPS_DllAPI void networkConfiguration(
+            NetworkConfigSet_t&& networkConfiguration)
+    {
+        m_networkConfiguration = std::move(networkConfiguration);
+    }
+
+    RTPS_DllAPI const NetworkConfigSet_t& networkConfiguration() const
+    {
+        return m_networkConfiguration;
+    }
+
+    RTPS_DllAPI NetworkConfigSet_t& networkConfiguration()
+    {
+        return m_networkConfiguration;
     }
 
     RTPS_DllAPI void persistence_guid(
@@ -433,12 +453,17 @@ public:
     bool readFromCDRMessage(
             CDRMessage_t* msg,
             const NetworkFactory& network,
-            bool is_shm_transport_possible);
+            bool is_shm_transport_possible,
+            bool should_filter_locators,
+            fastdds::rtps::VendorId_t source_vendor_id = c_VendorId_eProsima);
 
 private:
 
     //!GUID
     GUID_t m_guid;
+
+    //!Network configuration
+    NetworkConfigSet_t m_networkConfiguration;
 
     //!Holds locator information
     RemoteLocatorList remote_locators_;

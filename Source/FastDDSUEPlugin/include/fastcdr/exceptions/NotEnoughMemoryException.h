@@ -31,7 +31,7 @@ public:
     /*!
      * @brief Default constructor.
      *
-     * @param message A error message. This message pointer is copied.
+     * @param message An error message. This message pointer is copied.
      */
     Cdr_DllAPI NotEnoughMemoryException(
             const char* const& message) noexcept;
@@ -68,11 +68,11 @@ public:
     Cdr_DllAPI NotEnoughMemoryException& operator =(
             NotEnoughMemoryException&& ex) noexcept;
 
-    //! @brief Default constructor
+    //! @brief Default destructor
     virtual Cdr_DllAPI ~NotEnoughMemoryException() noexcept;
 
     //! @brief This function throws the object as exception.
-    virtual Cdr_DllAPI void raise() const override;
+    Cdr_DllAPI void raise() const override;
 
     //! @brief Default message used in the library.
     static Cdr_DllAPI const char* const NOT_ENOUGH_MEMORY_MESSAGE_DEFAULT;

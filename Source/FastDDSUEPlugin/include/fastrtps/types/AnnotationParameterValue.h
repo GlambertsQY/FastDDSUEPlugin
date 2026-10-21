@@ -38,13 +38,14 @@
 
 #endif // if _MSC_VER
 
-#include <fastrtps/types/TypesBase.h>
-#include <fastrtps/types/TypeIdentifier.h>
-#include <fastrtps/utils/string_convert.hpp>
-#include <fastrtps/fastrtps_dll.h>
-#include <stdint.h>
 #include <array>
+#include <stdint.h>
 #include <vector>
+
+#include <fastrtps/fastrtps_dll.h>
+#include <fastrtps/types/TypeIdentifier.h>
+#include <fastrtps/types/TypesBase.h>
+#include <fastrtps/utils/string_convert.hpp>
 
 namespace eprosima {
 namespace fastcdr {
@@ -58,7 +59,7 @@ namespace types {
 
 /*!
  * @brief This class represents the structure ExtendedAnnotationParameterValue defined by the user in the IDL file.
- * @ingroup ANNOTATIONPARAMETERVALUE
+ * @ingroup TYPES_MODULE
  */
 class ExtendedAnnotationParameterValue
 {
@@ -102,21 +103,26 @@ public:
     RTPS_DllAPI ExtendedAnnotationParameterValue& operator =(
             ExtendedAnnotationParameterValue&& x);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     /*!
      * @brief This function returns the serialized size of a data depending on the buffer alignment.
      * @param data Data which is calculated its serialized size.
      * @param current_alignment Buffer alignment.
      * @return Serialized size.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3,
+            "eprosima::fastrtps::types::ExtendedAnnotationParameterValue::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const ExtendedAnnotationParameterValue& data,
             size_t current_alignment = 0);
-
 
     /*!
      * @brief This function serializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::ExtendedAnnotationParameterValue::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
 
@@ -124,10 +130,11 @@ public:
      * @brief This function deserializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::ExtendedAnnotationParameterValue::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
-
-
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
     /*!
      * @brief This function returns the maximum serialized size of the Key of an object
@@ -160,7 +167,7 @@ private:
 };
 /*!
  * @brief This class represents the union AnnotationParameterValue defined by the user in the IDL file.
- * @ingroup ANNOTATIONPARAMETERVALUE
+ * @ingroup TYPES_MODULE
  */
 class AnnotationParameterValue
 {
@@ -589,21 +596,25 @@ public:
      */
     RTPS_DllAPI ExtendedAnnotationParameterValue& extended_value();
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     /*!
      * @brief This function returns the serialized size of a data depending on the buffer alignment.
      * @param data Data which is calculated its serialized size.
      * @param current_alignment Buffer alignment.
      * @return Serialized size.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AnnotationParameterValue::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const AnnotationParameterValue& data,
             size_t current_alignment = 0);
-
 
     /*!
      * @brief This function serializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AnnotationParameterValue::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
 
@@ -611,10 +622,11 @@ public:
      * @brief This function deserializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AnnotationParameterValue::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
-
-
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
     /*!
      * @brief This function returns the maximum serialized size of the Key of an object
@@ -813,7 +825,7 @@ private:
 
 /*!
  * @brief This class represents the structure AppliedAnnotationParameter defined by the user in the IDL file.
- * @ingroup ANNOTATIONPARAMETERVALUE
+ * @ingroup TYPES_MODULE
  */
 class AppliedAnnotationParameter
 {
@@ -933,21 +945,25 @@ public:
         return m_value;
     }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     /*!
      * @brief This function returns the serialized size of a data depending on the buffer alignment.
      * @param data Data which is calculated its serialized size.
      * @param current_alignment Buffer alignment.
      * @return Serialized size.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotationParameter::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const AppliedAnnotationParameter& data,
             size_t current_alignment = 0);
-
 
     /*!
      * @brief This function serializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotationParameter::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
 
@@ -955,10 +971,11 @@ public:
      * @brief This function deserializes an object using CDR serialization.
      * @param cdr CDR serialization object.
      */
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotationParameter::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
-
-
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
     /*!
      * @brief This function returns the maximum serialized size of the Key of an object
@@ -1098,13 +1115,22 @@ public:
         return m_param_seq;
     }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotation::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const AppliedAnnotation& data,
             size_t current_alignment = 0);
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotation::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedAnnotation::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
+#endif // DOXYGEN_SHOULD_SKIP_THIS
+
     RTPS_DllAPI static size_t getKeyMaxCdrSerializedSize(
             size_t current_alignment = 0);
     RTPS_DllAPI static bool isKeyDefined();
@@ -1215,15 +1241,23 @@ public:
         return m_text;
     }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedVerbatimAnnotation::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const AppliedVerbatimAnnotation& data,
             size_t current_alignment = 0);
 
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedVerbatimAnnotation::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
 
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedVerbatimAnnotation::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
     RTPS_DllAPI static size_t getKeyMaxCdrSerializedSize(
             size_t current_alignment = 0);
@@ -1359,15 +1393,24 @@ public:
         return m_hash_id;
     }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    FASTDDS_SER_METHOD_DEPRECATED(3,
+            "eprosima::fastrtps::types::AppliedBuiltinMemberAnnotations::getCdrSerializedSize()",
+            "In favor of version using eprosima::fastcdr::calculate_serialized_size.")
     RTPS_DllAPI static size_t getCdrSerializedSize(
             const AppliedBuiltinMemberAnnotations& data,
             size_t current_alignment = 0);
 
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedBuiltinMemberAnnotations::serialize()",
+            "In favor of version using eprosima::fastcdr::serialize.")
     RTPS_DllAPI void serialize(
             eprosima::fastcdr::Cdr& cdr) const;
 
+    FASTDDS_SER_METHOD_DEPRECATED(3, "eprosima::fastrtps::types::AppliedBuiltinMemberAnnotations::deserialize()",
+            "In favor of version using eprosima::fastcdr::deserialize.")
     RTPS_DllAPI void deserialize(
             eprosima::fastcdr::Cdr& cdr);
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
     RTPS_DllAPI static size_t getKeyMaxCdrSerializedSize(
             size_t current_alignment = 0);

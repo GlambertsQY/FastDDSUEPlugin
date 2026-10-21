@@ -23,6 +23,7 @@
 #ifndef _FAST_DDS_GENERATED_FASTDDSJSONSTR_PUBSUBTYPES_H_
 #define _FAST_DDS_GENERATED_FASTDDSJSONSTR_PUBSUBTYPES_H_
 
+#pragma warning(push)
 #pragma warning(disable : 4668)
 #pragma warning(disable : 4582)
 #pragma warning(disable : 4265)
@@ -34,7 +35,7 @@
 #include "JsonStr.h"
 
 
-#if !defined(GEN_API_VER) || (GEN_API_VER != 1)
+#if !defined(GEN_API_VER) || (GEN_API_VER != 1 && GEN_API_VER != 2)
 #error \
 
     Generated FastDDSJsonStr is not compatible with current installed Fast DDS. Please, regenerate it with fastddsgen.
@@ -106,6 +107,8 @@ public:
     unsigned char* m_keyBuffer;
 
 };
+
+#pragma warning(pop)
 
 #endif // _FAST_DDS_GENERATED_FASTDDSJSONSTR_PUBSUBTYPES_H_
 

@@ -70,6 +70,7 @@ public:
      * @param[out] participant Pointer to the Participant which discovered the remote participant.
      * @param[out] info Remote participant information. User can take ownership of the object.
      */
+    FASTDDS_TODO_BEFORE(3, 0, "Remove this overload");
     virtual void on_participant_discovery(
             DomainParticipant* participant,
             fastrtps::rtps::ParticipantDiscoveryInfo&& info)
@@ -186,9 +187,7 @@ public:
     /*!
      * This method is called when a participant discovers a new Type
      * The ownership of all object belongs to the caller so if needs to be used after the
-     * method ends, a full copy should be perform (except for dyn_type due to its shared_ptr nature.
-     * For example:
-     * fastrtps::types::TypeIdentifier new_type_id = \*identifier;
+     * method ends, a full copy should be performed (except for dyn_type due to its shared_ptr nature).
      */
     virtual void on_type_discovery(
             DomainParticipant* participant,
